@@ -1,0 +1,370 @@
+﻿@page "/rentar-vehiculo"
+@rendermode InteractiveServer
+
+@using RentCar.Data.Dtos
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+
+@attribute [Authorize(Roles = "Admin,User")]
+
+@inject IRentaService RentaService
+@inject IClienteService ClienteService
+@inject IVehiculoService VehiculoService
+@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+
+<div class="container">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-title">
+            <h1>Registrar Renta</h1>
+            <p>Completa la información para rentar un vehículo a un cliente.</p>
+        </div>
+
+        <button class="btn-add" @onclick="VolverAListaVehiculos">
+            ← Volver a vehículos
+        </button>
+    </header>
+
+    <!-- FORMULARIO -->
+    <div class="form-card">
+        @if (!string.IsNullOrEmpty(mensaje))
+        {
+            <div class="alert @(esError ? "alert-error" : "alert-success")">
+                @mensaje
+            </div>
+        }
+
+        <EditForm Model="modeloRenta" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <!-- CLIENTE Y VEHÍCULO -->
+            <div class="form-row">
+                <!-- CLIENTE (AUTOCOMPLETE) -->
+                <div class="form-group autocomplete-group">
+                    <label>Cliente</label>
+
+                    <InputText class="form-control"
+                               placeholder="Escriba nombre, apellido, cédula o teléfono..."
+                               @bind-Value="textoBusquedaCliente"
+                               @oninput="OnClienteInput" />
+
+                    <ValidationMessage For="@(() => modeloRenta.ClienteId)" />
+
+                    @if (mostrarSugerenciasCliente && clientesFiltrados.Any())
+                    {
+                        <ul class="autocomplete-list">
+                            @foreach (var c in clientesFiltrados.Take(10))
+                            {
+                                <li @onclick="@(() => SeleccionarCliente(c))">
+                                    @($"{c.Nombre} {c.Apellido} - {c.Cedula} ({c.Telefono})")
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+
+                <!-- VEHÍCULO (AUTOCOMPLETE) -->
+                <div class="form-group autocomplete-group">
+                    <label>Vehículo</label>
+
+                    <InputText class="form-control"
+                               placeholder="Escriba marca, modelo, placa o color..."
+                               @bind-Value="textoBusquedaVehiculo"
+                               @oninput="OnVehiculoInput" />
+
+                    <ValidationMessage For="@(() => modeloRenta.VehiculoId)" />
+
+                    @if (mostrarSugerenciasVehiculo && vehiculosFiltrados.Any())
+                    {
+                        <ul class="autocomplete-list">
+                            @foreach (var v in vehiculosFiltrados.Take(10))
+                            {
+                                <li @onclick="@(() => SeleccionarVehiculo(v))">
+                                    @($"{v.Marca} {v.Modelo} - {v.Placa} ({v.Color}) [{v.Estado}] - Precio: {v.PrecioPorDia}")
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+
+            <!-- FECHAS -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha de salida</label>
+                    <InputDate class="form-control"
+                               @bind-Value="FechaSalida" />
+                    <ValidationMessage For="@(() => modeloRenta.FechaSalida)" />
+                </div>
+
+                <div class="form-group">
+                    <label>Fecha estimada de devolución</label>
+                    <InputDate class="form-control"
+                               @bind-Value="FechaEstimadaDevolucion" />
+                    <ValidationMessage For="@(() => modeloRenta.FechaEstimadaDevolucion)" />
+                </div>
+            </div>
+
+            <!-- PRECIO / DÍAS / MONTO -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Precio diario</label>
+                    <InputNumber class="form-control"
+                                 @bind-Value="modeloRenta.PrecioDiario"
+                                 readonly />
+                    <small class="text-muted">
+                        Se establece automáticamente según el vehículo seleccionado.
+                    </small>
+                    <ValidationMessage For="@(() => modeloRenta.PrecioDiario)" />
+                </div>
+
+                <div class="form-group">
+                    <label>Cantidad de días</label>
+                    <InputNumber class="form-control"
+                                 @bind-Value="modeloRenta.CantidadDias"
+                                 readonly />
+                    <ValidationMessage For="@(() => modeloRenta.CantidadDias)" />
+                </div>
+
+                <div class="form-group">
+                    <label>Monto estimado</label>
+                    <InputNumber class="form-control"
+                                 @bind-Value="modeloRenta.MontoEstimado"
+                                 disabled />
+                    <ValidationMessage For="@(() => modeloRenta.MontoEstimado)" />
+                </div>
+            </div>
+
+            <!-- MÉTODO DE PAGO -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Método de pago</label>
+                    <InputSelect class="form-control" @bind-Value="modeloRenta.MetodoPago">
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Tarjeta">Tarjeta</option>
+                        <option value="Transferencia">Transferencia</option>
+                    </InputSelect>
+                </div>
+            </div>
+
+            <!-- NOTAS -->
+            <div class="form-group">
+                <label>Notas / Observaciones</label>
+                <InputTextArea class="form-control" @bind-Value="modeloRenta.Notas" />
+            </div>
+
+            <!-- BOTÓN -->
+            <div class="form-actions">
+                <button type="submit" class="btn-primary" disabled="@isSaving">
+                    @(isSaving ? "Guardando..." : "Guardar Renta")
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private RentaCreateDto modeloRenta = new();
+    private List<ClienteDto> clientes = new();
+    private List<VehiculoDto> vehiculosDisponibles = new();
+
+    // 🔍 Textos de búsqueda
+    private string textoBusquedaCliente = string.Empty;
+    private string textoBusquedaVehiculo = string.Empty;
+
+    // Flags para listas de sugerencias
+    private bool mostrarSugerenciasCliente;
+    private bool mostrarSugerenciasVehiculo;
+
+    // Listas filtradas
+    private IEnumerable<ClienteDto> clientesFiltrados =>
+        string.IsNullOrWhiteSpace(textoBusquedaCliente)
+            ? clientes
+            : clientes.Where(c =>
+                (!string.IsNullOrEmpty(c.Nombre) && c.Nombre.Contains(textoBusquedaCliente, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(c.Apellido) && c.Apellido.Contains(textoBusquedaCliente, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(c.Cedula) && c.Cedula.Contains(textoBusquedaCliente, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(c.Telefono) && c.Telefono.Contains(textoBusquedaCliente, StringComparison.OrdinalIgnoreCase)));
+
+    private IEnumerable<VehiculoDto> vehiculosFiltrados =>
+        string.IsNullOrWhiteSpace(textoBusquedaVehiculo)
+            ? vehiculosDisponibles
+            : vehiculosDisponibles.Where(v =>
+                (!string.IsNullOrEmpty(v.Marca) && v.Marca.Contains(textoBusquedaVehiculo, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(v.Modelo) && v.Modelo.Contains(textoBusquedaVehiculo, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(v.Placa) && v.Placa.Contains(textoBusquedaVehiculo, StringComparison.OrdinalIgnoreCase)) ||
+                (!string.IsNullOrEmpty(v.Color) && v.Color.Contains(textoBusquedaVehiculo, StringComparison.OrdinalIgnoreCase)));
+
+    private string? mensaje;
+    private bool esError;
+    private bool isSaving;
+
+    // ===== Wrappers para fechas =====
+    private DateTime FechaSalida
+    {
+        get => modeloRenta.FechaSalida;
+        set
+        {
+            modeloRenta.FechaSalida = value;
+            CalcularMontos();
+        }
+    }
+
+    private DateTime FechaEstimadaDevolucion
+    {
+        get => modeloRenta.FechaEstimadaDevolucion;
+        set
+        {
+            modeloRenta.FechaEstimadaDevolucion = value;
+            CalcularMontos();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        modeloRenta = new RentaCreateDto
+        {
+            FechaSalida = DateTime.Today,
+            FechaEstimadaDevolucion = DateTime.Today.AddDays(1),
+            MetodoPago = "Efectivo",
+            PrecioDiario = 0,
+            CantidadDias = 0,
+            MontoEstimado = 0
+        };
+
+        var listaClientes = await ClienteService.GetAllAsync();
+        clientes = listaClientes
+            .Where(c => c.EsActivo)
+            .ToList();
+
+        var listaVehiculos = await VehiculoService.GetAllAsync();
+        vehiculosDisponibles = listaVehiculos
+            .Where(v => v.EsActivo && v.Estado == "Disponible")
+            .ToList();
+
+        CalcularMontos();
+    }
+
+    private void VolverAListaVehiculos()
+    {
+        Nav.NavigateTo("/ver-vehiculos");
+    }
+
+    // ========================= AUTOCOMPLETE CLIENTE =========================
+    private void OnClienteInput(ChangeEventArgs e)
+    {
+        textoBusquedaCliente = e.Value?.ToString() ?? string.Empty;
+        mostrarSugerenciasCliente = !string.IsNullOrWhiteSpace(textoBusquedaCliente)
+                                    && clientesFiltrados.Any();
+        modeloRenta.ClienteId = 0;
+    }
+
+    private void SeleccionarCliente(ClienteDto cliente)
+    {
+        modeloRenta.ClienteId = cliente.Id;
+        textoBusquedaCliente = $"{cliente.Nombre} {cliente.Apellido} - {cliente.Cedula} ({cliente.Telefono})";
+        mostrarSugerenciasCliente = false;
+    }
+
+    // ========================= AUTOCOMPLETE VEHÍCULO =========================
+    private void OnVehiculoInput(ChangeEventArgs e)
+    {
+        textoBusquedaVehiculo = e.Value?.ToString() ?? string.Empty;
+        mostrarSugerenciasVehiculo = !string.IsNullOrWhiteSpace(textoBusquedaVehiculo)
+                                     && vehiculosFiltrados.Any();
+
+        modeloRenta.VehiculoId = 0;
+        modeloRenta.PrecioDiario = 0;
+        CalcularMontos();
+    }
+
+    private void SeleccionarVehiculo(VehiculoDto vehiculo)
+    {
+        modeloRenta.VehiculoId = vehiculo.Id;
+        textoBusquedaVehiculo = $"{vehiculo.Marca} {vehiculo.Modelo} - {vehiculo.Placa} ({vehiculo.Color})";
+        mostrarSugerenciasVehiculo = false;
+
+        // ⬇️ AQUÍ ES DONDE vehiculo.PrecioPorDia LLENA EL INPUT
+        modeloRenta.PrecioDiario = vehiculo.PrecioPorDia;
+        CalcularMontos();
+    }
+
+    // ========================= LÓGICA DE LA RENTA =========================
+
+    private async Task OnValidSubmit()
+    {
+        esError = false;
+        mensaje = null;
+        isSaving = true;
+
+        CalcularMontos();
+
+        var (ok, error) = await RentaService.CrearRentaAsync(modeloRenta);
+        isSaving = false;
+
+        if (ok)
+        {
+            mensaje = "La renta se guardó correctamente. Se generó la factura y el movimiento.";
+            await JSRuntime.InvokeVoidAsync("alert", "✅ Renta registrada correctamente.");
+
+            // Reset modelo
+            modeloRenta = new RentaCreateDto
+            {
+                FechaSalida = DateTime.Today,
+                FechaEstimadaDevolucion = DateTime.Today.AddDays(1),
+                MetodoPago = "Efectivo",
+                PrecioDiario = 0,
+                CantidadDias = 0,
+                MontoEstimado = 0
+            };
+
+            textoBusquedaCliente = string.Empty;
+            textoBusquedaVehiculo = string.Empty;
+
+            var listaVehiculos = await VehiculoService.GetAllAsync();
+            vehiculosDisponibles = listaVehiculos
+                .Where(v => v.EsActivo && v.Estado == "Disponible")
+                .ToList();
+
+            CalcularMontos();
+        }
+        else
+        {
+            esError = true;
+            mensaje = error ?? "Ocurrió un error al guardar la renta.";
+            await JSRuntime.InvokeVoidAsync("alert", $"⚠️ Error: {mensaje}");
+        }
+    }
+
+    private void CalcularMontos()
+    {
+        // Validar rango de fechas
+        if (modeloRenta.FechaEstimadaDevolucion.Date <= modeloRenta.FechaSalida.Date)
+        {
+            modeloRenta.CantidadDias = 0;
+            modeloRenta.MontoEstimado = 0;
+            return;
+        }
+
+        // Días calculados solo por las fechas
+        var dias = (modeloRenta.FechaEstimadaDevolucion.Date - modeloRenta.FechaSalida.Date).Days;
+        if (dias <= 0)
+        {
+            dias = 1;
+        }
+        modeloRenta.CantidadDias = dias;
+
+        // Monto = PrecioPorDia * días
+        if (modeloRenta.PrecioDiario > 0 && modeloRenta.CantidadDias > 0)
+        {
+            modeloRenta.MontoEstimado = modeloRenta.PrecioDiario * modeloRenta.CantidadDias;
+        }
+        else
+        {
+            modeloRenta.MontoEstimado = 0;
+        }
+    }
+}

@@ -1,0 +1,444 @@
+﻿@page "/Dashboard"
+@using RentCar.Data.Dtos
+@using System.Linq
+@*Autorizaciones solo para el administrador*@
+@using Microsoft.AspNetCore.Authorization
+@using RentCar.Data.Services
+@attribute [Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+
+@inject NavigationManager navigationManager
+
+@* Servicios necesarios *@
+@inject IVehiculoService vehiculoService
+@inject IMovimientoService movimientoService
+@inject ICategoriaService categoriaService
+@inject IMasUsadosService masUsadosService
+@inject IClienteService ClienteService
+
+<PageTitle>DashBoard</PageTitle>
+
+<div class="section dashboard-root">
+    <!-- Cards de estadísticas -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 stat-label">🚗 Vehículos Totales</p>
+                        <h2 class="text-primary stat-value">
+                            @stats.TotalVehiculos <span class="badge-emoji">📦</span>
+                        </h2>
+                        <small class="text-success">
+                            <span class="small-emoji">⬆️</span> @stats.VehiculosDisponibles activos
+                        </small>
+                    </div>
+                    <div class="stat-emoji">🚘</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 stat-label">🔁 Vehículos Rentados</p>
+                        <h2 class="text-danger stat-value">@stats.VehiculosRentados</h2>
+                        <small class="text-muted">Disponible: @stats.VehiculosDisponibles</small>
+                    </div>
+                    <div class="stat-emoji">🔑</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 stat-label">👥 Clientes Activos</p>
+                        <h2 class="text-success stat-value">@ClientesActivos</h2>
+                        <small class="text-muted">Total: @TotalClientes</small>
+                    </div>
+                    <div class="stat-emoji">🧑‍🤝‍🧑</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-1 stat-label">📅 Movimientos Hoy</p>
+                        <h2 class="text-info stat-value">@MovimientosHoy</h2>
+                        <small class="text-muted">Total: @TotalMovimientos</small>
+                    </div>
+                    <div class="stat-emoji">📈</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filas -->
+    <div class="row g-4 mb-4">
+        <!-- Vehículos por estado -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-white header-with-emoji">
+                    <h5 class="mb-0">📊 Vehículos por Estado</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Disponibles -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Disponible</span>
+                            <strong>@stats.VehiculosDisponibles</strong>
+                        </div>
+                        <div class="progress progress-custom">
+                            <div class="progress-bar bg-success" style="width: @PorcentajeDisponibles%">
+                                @PorcentajeDisponibles%
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rentados -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Rentado</span>
+                            <strong>@stats.VehiculosRentados</strong>
+                        </div>
+                        <div class="progress progress-custom">
+                            <div class="progress-bar bg-danger" style="width: @PorcentajeRentados%">
+                                @PorcentajeRentados%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cantidad por categoría -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-white header-with-emoji">
+                    <h5 class="mb-0">⭐ Cantidad por Categoría</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach (var categoria in vehiculosPorCategoria)
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-0 category-item">
+                                <span>
+                                    <span class="cat-emoji">🏷️</span> @categoria.Categoria
+                                </span>
+                                <span class="badge bg-primary rounded-pill">@categoria.Cantidad</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actividad reciente -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center header-with-emoji">
+                    <h5 class="mb-0">🕘 Actividad Reciente</h5>
+                    <button class="btn btn-sm btn-outline-primary btn-emoji" @onclick="VerTodoActividad">
+                        Ver Todo
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @foreach (var actividad in actividadReciente)
+                        {
+                            <div class="list-group-item activity-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        <span class="badge @(actividad.Tipo == "Renta" ? "bg-danger" : "bg-success") activity-badge">
+                                            @((actividad.Tipo == "Renta") ? "🚗 Renta" : "✅ " + actividad.Tipo)
+                                        </span>
+                                    </h6>
+                                    <small class="text-muted">@actividad.TiempoDisplay</small>
+                                </div>
+                                <p class="mb-1 small activity-desc">@actividad.ClienteNombre</p>
+                                <small class="text-muted">@actividad.VehiculoInfo</small>
+                            </div>
+                        }
+
+                        @if (!actividadReciente.Any())
+                        {
+                            <div class="list-group-item text-center text-muted py-4">
+                                No hay actividad reciente ✨
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vehículos más usados -->
+    <div class="card vehicles-card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center header-with-emoji">
+            <h5 class="mb-0">🔥 Vehículos Más usados</h5>
+            <button class="btn btn-sm btn-primary btn-emoji" @onclick="GestionarVehiculos">
+                <span class="btn-emoji-icon">➕</span> Gestionar Vehículos
+            </button>
+        </div>
+        <div class="card-body">
+            @if (isLoading)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border" role="status"></div>
+                </div>
+            }
+            else if (!Vehiculos.Any())
+            {
+                <div class="text-center py-4 text-muted">
+                    No hay vehículos para mostrar. 🚫
+                </div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    @foreach (var vehiculo in ListadoMasUsados)
+                    {
+                        <div class="col-md-3">
+                            <div class="card h-100 vehicle-card">
+                                <div class="vehicle-image-wrap">
+                                    <img src="@(string.IsNullOrWhiteSpace(vehiculo.ImageUrl) ? "_content/placeholder.png" : vehiculo.ImageUrl)"
+                                         class="card-img-top vehicle-img"
+                                         alt="@vehiculo.Modelo" />
+                                    <div class="vehicle-badge">
+                                        <span class="small-emoji"></span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="card-title mb-0 vehicle-title">
+                                            @vehiculo.Marca @vehiculo.Modelo
+                                        </h6>
+                                        <span class="badge @(vehiculo.Estado == "Disponible" ? "bg-success" : "bg-danger") status-badge">
+                                            @vehiculo.Estado
+                                        </span>
+                                    </div>
+                                    <p class="text-muted mb-2 small">
+                                        <small>📅 @vehiculo.Año</small>
+                                    </p>
+                                    <ul class="list-unstyled small vehicle-meta">
+                                        <li>🔖 @vehiculo.Placa</li>
+                                        <li>🎨 @vehiculo.Color</li>
+                                        <li>📌 Solicitado: @vehiculo.VecesUsado veces</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    #region Estado
+
+    private List<VehiculoDto> Vehiculos { get; set; } = new();
+    private List<MovimientoDto> Movimientos { get; set; } = new();
+
+    // Clientes
+    private List<ClienteDto> Clientes { get; set; } = new();
+
+    // Vehículos más usados
+    public List<MasUsadosDto> ListadoMasUsados { get; set; } = new();
+
+    private bool isLoading = true;
+
+    // Stats y colecciones derivadas
+    private Stats stats { get; set; } = new();
+    private List<CategoryCount> vehiculosPorCategoria { get; set; } = new();
+    private List<ActivityItem> actividadReciente { get; set; } = new();
+
+    // Clientes basados en la lista cargada
+    private int TotalClientes => Clientes.Count;
+    private int ClientesActivos => Clientes.Count(c => c.EsActivo);
+
+    // Derivados
+    private int TotalMovimientos => Movimientos.Count;
+    private int MovimientosHoy => Movimientos.Count(m => m.FechaMovimiento.Date == DateTime.UtcNow.Date);
+
+    // Porcentajes para la barra de progreso
+    private int PorcentajeDisponibles => GetPercentage(stats.VehiculosDisponibles, stats.TotalVehiculos);
+    private int PorcentajeRentados => GetPercentage(stats.VehiculosRentados, stats.TotalVehiculos);
+
+    #endregion
+
+    #region Ciclo de vida
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+        await LoadVehiculosMasUsadosAsync();
+        
+    }
+
+    #endregion
+
+    #region Carga de datos
+
+    private async Task LoadDataAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            // Vehículos
+            var vehs = await vehiculoService.GetAllAsync();
+            Vehiculos = vehs ?? new List<VehiculoDto>();
+
+            // Clientes
+            var clis = await ClienteService.GetAllAsync();
+            Clientes = clis ?? new List<ClienteDto>();
+
+            // Movimientos
+            var movs = (await movimientoService.GetTodosAsync()).ToList();
+            Movimientos = movs ?? new List<MovimientoDto>();
+
+            // Categorías: construir diccionario id -> nombre
+            var categorias = await categoriaService.GetAllAsync();
+            var catDict = (categorias ?? new List<CategoriaDto>())
+                .ToDictionary(c => c.Id, c => c.NombreCategoria);
+
+            // Agrupar vehículos por categoría
+            vehiculosPorCategoria = Vehiculos
+                .GroupBy(v => v.CategoriaId)
+                .Select(g => new CategoryCount
+                {
+                    Categoria = g.Key == 0
+                        ? "Sin categoría"
+                        : (catDict.TryGetValue(g.Key, out var nombre)
+                            ? nombre
+                            : $"Categoría {g.Key}"),
+                    Cantidad = g.Count()
+                })
+                .OrderByDescending(c => c.Cantidad)
+                .ToList();
+
+            ComputeDerivedData();
+        }
+        catch (Exception)
+        {
+            // En caso de error, mantener listas vacías pero coherentes
+            Vehiculos ??= new List<VehiculoDto>();
+            Movimientos ??= new List<MovimientoDto>();
+            Clientes ??= new List<ClienteDto>();
+            vehiculosPorCategoria ??= new List<CategoryCount>();
+
+            ComputeDerivedData();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadVehiculosMasUsadosAsync()
+    {
+        ListadoMasUsados = await masUsadosService.ObtenerMasUsadosAsync() ?? new List<MasUsadosDto>();
+    }
+
+    #endregion
+
+    #region Navegación
+
+    private void RentarVehiculo(int id)
+    {
+        navigationManager.NavigateTo($"/rentar-vehiculo/{id}");
+    }
+
+    private void GestionarVehiculos()
+    {
+        navigationManager.NavigateTo("/lista-vehiculos");
+    }
+
+    private void VerTodoActividad()
+    {
+        navigationManager.NavigateTo("/movimientos");
+    }
+
+    #endregion
+
+    #region Helpers
+
+    private void ComputeDerivedData()
+    {
+        // Stats por estado
+        stats.TotalVehiculos = Vehiculos.Count;
+        stats.VehiculosDisponibles = Vehiculos.Count(
+            v => string.Equals(v.Estado, "Disponible", StringComparison.OrdinalIgnoreCase));
+        stats.VehiculosRentados = stats.TotalVehiculos - stats.VehiculosDisponibles;
+
+        // Actividad reciente: últimos 5 movimientos por fecha
+        actividadReciente = Movimientos
+            .OrderByDescending(m => m.FechaMovimiento)
+            .Take(5)
+            .Select(m => new ActivityItem
+            {
+                Tipo = string.IsNullOrWhiteSpace(m.TipoMovimiento) ? "Actividad" : m.TipoMovimiento,
+                TiempoDisplay = GetRelativeTime(m.FechaMovimiento),
+                ClienteNombre = string.IsNullOrWhiteSpace(m.Descripcion)
+                    ? "Detalles no disponibles"
+                    : m.Descripcion,
+                VehiculoInfo = m.Monto != 0m
+                    ? $"Monto: {m.Monto:C}"
+                    : string.Empty
+            })
+            .ToList();
+    }
+
+    private static string GetRelativeTime(DateTime dateTime)
+    {
+        var ts = DateTime.UtcNow - dateTime.ToUniversalTime();
+
+        if (ts.TotalSeconds < 60) return $"{(int)ts.TotalSeconds}s";
+        if (ts.TotalMinutes < 60) return $"{(int)ts.TotalMinutes}m";
+        if (ts.TotalHours < 24) return $"{(int)ts.TotalHours}h";
+        if (ts.TotalDays < 30) return $"{(int)ts.TotalDays}d";
+
+        return dateTime.ToShortDateString();
+    }
+
+    private static int GetPercentage(int parte, int total)
+    {
+        if (total <= 0 || parte <= 0) return 0;
+        return (int)Math.Round(parte * 100d / total);
+    }
+
+    #endregion
+
+    #region Tipos auxiliares
+
+    private class Stats
+    {
+        public int TotalVehiculos { get; set; }
+        public int VehiculosDisponibles { get; set; }
+        public int VehiculosRentados { get; set; }
+    }
+
+    private class CategoryCount
+    {
+        public string Categoria { get; set; } = string.Empty;
+        public int Cantidad { get; set; }
+    }
+
+    private class ActivityItem
+    {
+        public string Tipo { get; set; } = string.Empty;
+        public string TiempoDisplay { get; set; } = string.Empty;
+        public string ClienteNombre { get; set; } = string.Empty;
+        public string VehiculoInfo { get; set; } = string.Empty;
+    }
+
+    #endregion
+}

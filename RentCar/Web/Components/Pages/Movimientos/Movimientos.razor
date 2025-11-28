@@ -1,0 +1,232 @@
+﻿@page "/movimientos"
+@rendermode InteractiveServer
+
+@using RentCar.Data.Dtos
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.JSInterop
+
+@attribute [Authorize(Roles = "Admin,User")]
+@inject IMovimientoService MovimientoService
+@inject IJSRuntime JSRuntime
+
+<div class="container movimientos-page">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-title">
+            <h1>Historial de movimientos</h1>
+            <p>Consulta todos los movimientos generados por rentas, devoluciones y pagos.</p>
+        </div>
+    </header>
+
+    <!-- MENSAJE GLOBAL -->
+    @if (!string.IsNullOrWhiteSpace(mensaje))
+    {
+        <div class="alert @(esError ? "alert-error" : "alert-success")">
+            @mensaje
+        </div>
+    }
+
+    <section class="main-container">
+        <div class="main-container-header">
+            <h2>Listado de movimientos</h2>
+            <p>
+                Filtra por cliente, vehículo, tipo de movimiento, descripción o rango de fechas.
+            </p>
+
+            <div class="header-actions movimientos-filtros">
+                <!-- Búsqueda texto -->
+                <input type="text"
+                       class="search-input"
+                       placeholder="Buscar por cliente, vehículo, tipo o descripción..."
+                       @bind="textoBusqueda"
+                       @bind:event="oninput" />
+
+                <!-- Fecha desde -->
+                <input type="date"
+                       class="search-input"
+                       @bind="fechaDesde"
+                       @bind:format="yyyy-MM-dd" />
+
+                <!-- Fecha hasta -->
+                <input type="date"
+                       class="search-input"
+                       @bind="fechaHasta"
+                       @bind:format="yyyy-MM-dd" />
+
+                <!-- Tipo de movimiento -->
+                <select class="search-input"
+                        @bind="tipoMovimientoSeleccionado">
+                    <option value="">Todos los tipos</option>
+                    @foreach (var tipo in tiposMovimiento)
+                    {
+                        <option value="@tipo">@tipo</option>
+                    }
+                </select>
+
+                <button type="button"
+                        class="search-button"
+                        @onclick="LimpiarFiltros">
+                    Limpiar filtros
+                </button>
+            </div>
+
+            @if (!isLoading && movimientos.Any())
+            {
+                <div class="resumen-movimientos">
+                    <small>
+                        Mostrando @movimientosFiltrados.Count() de @movimientos.Count movimientos ·
+                        Total monto filtrado: @movimientosFiltrados.Sum(m => m.Monto).ToString("C2")
+                    </small>
+                </div>
+            }
+        </div>
+
+        <!-- LISTA / TABLA -->
+        <div class="movimientos-list">
+            @if (isLoading)
+            {
+                <p>Cargando movimientos...</p>
+            }
+            else if (!movimientosFiltrados.Any())
+            {
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="1.5"
+                              d="M3 5.25h18M3 12h18M3 18.75h18" />
+                    </svg>
+                    <h3>No hay movimientos que coincidan con los filtros</h3>
+                    <p>Prueba quitando filtros o ampliando el rango de fechas.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-wrapper">
+                    <table class="data-table movimientos-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo</th>
+                                <th>Cliente</th>
+                                <th>Vehículo</th>
+                                <th>Monto</th>
+                                <th>Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in movimientosFiltrados)
+                            {
+                                <tr>
+                                    <td>@m.FechaMovimiento.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <span class="badge badge-tipo">
+                                            @m.TipoMovimiento
+                                        </span>
+                                    </td>
+                                    <td>@m.NombreCliente</td>
+                                    <td>@m.VehiculoDescripcion</td>
+                                    <td>@m.Monto.ToString("C2")</td>
+                                    <td>@m.Descripcion</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    private List<MovimientoDto> movimientos = new();
+    private bool isLoading = true;
+    private string? mensaje;
+    private bool esError;
+
+    // Filtros
+    private string textoBusqueda = string.Empty;
+    private DateTime? fechaDesde;
+    private DateTime? fechaHasta;
+    private string tipoMovimientoSeleccionado = string.Empty;
+    private List<string> tiposMovimiento = new();
+
+    private IEnumerable<MovimientoDto> movimientosFiltrados =>
+        movimientos
+            // Filtrado por texto
+            .Where(m =>
+                string.IsNullOrWhiteSpace(textoBusqueda) ||
+                (m.NombreCliente ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (m.VehiculoDescripcion ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (m.TipoMovimiento ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (m.Descripcion ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase))
+            // Fecha desde
+            .Where(m =>
+                !fechaDesde.HasValue ||
+                m.FechaMovimiento.Date >= fechaDesde.Value.Date)
+            // Fecha hasta
+            .Where(m =>
+                !fechaHasta.HasValue ||
+                m.FechaMovimiento.Date <= fechaHasta.Value.Date)
+            // Tipo de movimiento
+            .Where(m =>
+                string.IsNullOrWhiteSpace(tipoMovimientoSeleccionado) ||
+                string.Equals(m.TipoMovimiento, tipoMovimientoSeleccionado, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(m => m.FechaMovimiento);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarMovimientosAsync();
+    }
+
+    private async Task CargarMovimientosAsync()
+    {
+        isLoading = true;
+        mensaje = null;
+        esError = false;
+
+        try
+        {
+            var lista = await MovimientoService.GetMovimientosAsync();
+            movimientos = lista
+                .OrderByDescending(m => m.FechaMovimiento)
+                .ToList();
+
+            tiposMovimiento = movimientos
+                .Select(m => m.TipoMovimiento)
+                .Where(t => !string.IsNullOrWhiteSpace(t))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(t => t)
+                .ToList();
+
+            if (!movimientos.Any())
+            {
+                mensaje = "No se han registrado movimientos todavía.";
+                esError = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            esError = true;
+            mensaje = "Ocurrió un error al cargar los movimientos.";
+            await JSRuntime.InvokeVoidAsync("console.error", ex.Message);
+            await JSRuntime.InvokeVoidAsync("alert", $"⚠️ Error al cargar movimientos: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void LimpiarFiltros()
+    {
+        textoBusqueda = string.Empty;
+        fechaDesde = null;
+        fechaHasta = null;
+        tipoMovimientoSeleccionado = string.Empty;
+    }
+}

@@ -1,0 +1,403 @@
+﻿/* ============================
+   LAYOUT GENERAL
+   ============================ */
+
+.about-page {
+    max-width: 1280px;
+    margin-inline: auto;
+    padding: 3rem 6vw 3.5rem;
+    color: #e5e7eb;
+}
+
+/* ============================
+   HERO "CONÓCENOS"
+   ============================ */
+
+.about-hero {
+    border-radius: 1.5rem;
+    padding: 3rem 2.5rem;
+    margin-bottom: 2.5rem;
+    background: radial-gradient(circle at top left, #0ea5e9 0, #0f172a 40%, #020617 90%);
+    box-shadow: 0 26px 60px rgba(15, 23, 42, 0.9);
+}
+
+.about-hero-content {
+    max-width: 680px;
+}
+
+.about-hero h1 {
+    font-size: clamp(2.1rem, 4vw, 2.8rem);
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    color: #f9fafb;
+}
+
+.about-hero p {
+    font-size: 1rem;
+    color: #d1d5db;
+    max-width: 640px;
+}
+
+/* ============================
+   TARJETAS DE CONTENIDO
+   ============================ */
+
+.about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.about-card {
+    background: radial-gradient(circle at top left, #111827 0, #020617 70%);
+    border-radius: 1.25rem;
+    padding: 2rem 2.25rem;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.9);
+}
+
+    .about-card h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #f9fafb;
+        margin-bottom: 0.75rem;
+    }
+
+    .about-card p {
+        font-size: 0.96rem;
+        color: #e5e7eb;
+        margin-bottom: 0.5rem;
+    }
+
+/* ============================
+   MISIÓN / VISIÓN
+   ============================ */
+
+.about-vm-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+}
+
+.about-vm-card {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.98));
+    border-radius: 1rem;
+    padding: 1.25rem 1.4rem;
+    border: 1px solid rgba(248, 250, 252, 0.05);
+}
+
+    .about-vm-card h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #fbbf24;
+        margin-bottom: 0.5rem;
+    }
+
+    .about-vm-card p {
+        font-size: 0.95rem;
+        color: #e5e7eb;
+    }
+
+/* ============================
+   VALORES
+   ============================ */
+
+.about-values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.about-value-item {
+    background: #020617;
+    border-radius: 1rem;
+    padding: 1.25rem 1.3rem;
+    border: 1px solid rgba(55, 65, 81, 0.85);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    transition: transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+    .about-value-item:hover {
+        transform: translateY(-3px);
+        border-color: rgba(251, 191, 36, 0.9);
+        box-shadow: 0 22px 55px rgba(251, 191, 36, 0.35);
+    }
+
+.about-value-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.15rem;
+}
+
+.about-value-item h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #f9fafb;
+}
+
+.about-value-item p {
+    font-size: 0.9rem;
+    color: #d1d5db;
+}
+
+/* ============================
+   EQUIPO
+   ============================ */
+
+.about-team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.about-team-card {
+    background: #020617;
+    border-radius: 1rem;
+    padding: 1.5rem 1.4rem;
+    border: 1px solid rgba(55, 65, 81, 0.9);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.95);
+    text-align: center;
+    transition: transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+    .about-team-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(56, 189, 248, 0.9);
+        box-shadow: 0 22px 55px rgba(56, 189, 248, 0.35);
+    }
+
+.about-team-photo {
+    width: 64px;
+    height: 64px;
+    border-radius: 999px;
+    margin: 0 auto 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at 30% 0, #0ea5e9, #020617);
+    font-size: 2rem;
+}
+
+.about-team-card h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #f9fafb;
+    margin-bottom: 0.1rem;
+}
+
+.about-team-card .role {
+    font-size: 0.85rem;
+    color: #38bdf8;
+    margin-bottom: 0.35rem;
+}
+
+.about-team-card p {
+    font-size: 0.9rem;
+    color: #e5e7eb;
+}
+
+/* ============================
+   CTA FINAL
+   ============================ */
+
+.about-footer-cta {
+    text-align: center;
+    padding: 2.5rem 2rem 3rem;
+    border-radius: 1.5rem;
+    background: radial-gradient(circle at top left, #f97316 0, #0f172a 40%, #020617 95%);
+    box-shadow: 0 26px 60px rgba(0, 0, 0, 0.95);
+    margin-bottom: 2.5rem;
+}
+
+    .about-footer-cta h2 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #f9fafb;
+        margin-bottom: 0.5rem;
+    }
+
+    .about-footer-cta p {
+        font-size: 0.95rem;
+        color: #fef3c7;
+        margin-bottom: 1.5rem;
+    }
+
+.about-btn-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.8rem 1.8rem;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #ff9900, #ffb84d);
+    color: #111827;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 14px 30px rgba(251, 191, 36, 0.6);
+    transition: transform 0.12s ease, box-shadow 0.15s ease, opacity 0.1s ease;
+}
+
+    .about-btn-cta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 45px rgba(251, 191, 36, 0.8);
+        opacity: 0.97;
+    }
+
+/* ============================
+   FOOTER (mismo estilo que Home)
+   ============================ */
+
+.footer {
+    background: #020617;
+    color: #e5e7eb;
+    padding: 2.5rem 2rem 1.5rem;
+    border-top: 1px solid rgba(148, 163, 184, 0.35);
+    box-shadow: 0 -18px 40px rgba(0, 0, 0, 0.9);
+    margin-top: 0;
+}
+
+.footer-container {
+    max-width: 1280px;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* Marca */
+.footer-brand h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #ffb84d;
+    margin-bottom: 0.25rem;
+}
+
+.footer-brand p {
+    color: #9ca3af;
+    font-size: 0.95rem;
+}
+
+/* Columnas de enlaces */
+.footer-column h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: #f9fafb;
+}
+
+.footer-column ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-column li + li {
+    margin-top: 0.3rem;
+}
+
+.footer-column a {
+    color: #9ca3af;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.15s ease, transform 0.1s ease;
+}
+
+    .footer-column a:hover {
+        color: #ffb84d;
+        transform: translateX(2px);
+    }
+
+/* Social */
+.footer-social h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    color: #f9fafb;
+}
+
+.social-links {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+    .social-links a {
+        width: 36px;
+        height: 36px;
+        border-radius: 9999px;
+        background: #020617;
+        border: 1px solid rgba(148, 163, 184, 0.7);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #e5e7eb;
+        transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+    }
+
+        .social-links a:hover {
+            background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+            border-color: #38bdf8;
+            color: #0b1120;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.5);
+        }
+
+/* Parte inferior */
+.footer-bottom {
+    border-top: 1px solid rgba(31, 41, 55, 0.85);
+    padding-top: 1rem;
+    text-align: center;
+}
+
+    .footer-bottom p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #9ca3af;
+    }
+
+/* ============================
+   RESPONSIVE
+   ============================ */
+
+@media (max-width: 768px) {
+    .about-page {
+        padding-inline: 1.5rem;
+    }
+
+    .about-hero {
+        padding: 2.5rem 1.75rem;
+    }
+
+    .about-card {
+        padding-inline: 1.75rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .about-footer-cta {
+        padding-inline: 1.5rem;
+    }
+
+    .footer {
+        padding-inline: 1.5rem;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.25rem;
+    }
+}

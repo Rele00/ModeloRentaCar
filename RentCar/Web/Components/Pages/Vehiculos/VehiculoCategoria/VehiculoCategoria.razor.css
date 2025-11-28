@@ -1,0 +1,519 @@
+﻿/* ============================
+   LAYOUT GENERAL
+   ============================ */
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto 3rem;
+    padding-block: 1.5rem 3rem;
+    color: #e5e7eb;
+}
+
+/* HEADER SUPERIOR */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+}
+
+.header-title h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f9fafb;
+    margin-bottom: 0.35rem;
+}
+
+.header-title p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #9ca3af;
+}
+
+/* Botón principal (lista <-> formulario) */
+
+.btn-add {
+    background: linear-gradient(135deg, #ff9900, #ffb84d);
+    color: #111827;
+    padding: 0.65rem 1.6rem;
+    border-radius: 9999px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 12px 24px rgba(255, 153, 0, 0.45);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+
+    .btn-add svg {
+        pointer-events: none;
+    }
+
+    .btn-add:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 16px 32px rgba(255, 153, 0, 0.65);
+        opacity: 0.96;
+    }
+
+/* ============================
+   CONTENEDOR PRINCIPAL
+   ============================ */
+
+.main-container {
+    background: radial-gradient(circle at top left, #111827 0, #020617 55%, #000000 100%);
+    border-radius: 1.25rem;
+    padding: 1.75rem 1.75rem 2rem;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.95);
+}
+
+/* Encabezado dentro de la tarjeta (modo lista) */
+
+.main-container-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(31, 41, 55, 0.95);
+}
+
+    .main-container-header h2 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #f9fafb;
+        margin-bottom: 0.35rem;
+    }
+
+    .main-container-header p {
+        margin: 0 0 0.35rem;
+        font-size: 0.92rem;
+        color: #9ca3af;
+    }
+
+    .main-container-header .text-muted {
+        color: #9ca3af !important;
+    }
+
+/* ============================
+   ALERTAS
+   ============================ */
+
+.alert {
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.85rem;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+}
+
+.alert-error {
+    background-color: rgba(127, 29, 29, 0.45);
+    border: 1px solid #b91c1c;
+    color: #fee2e2;
+}
+
+.alert-success {
+    background-color: rgba(22, 101, 52, 0.4);
+    border: 1px solid #16a34a;
+    color: #dcfce7;
+}
+
+/* ============================
+   FORMULARIO (MODO FORMULARIO)
+   ============================ */
+
+.form-panel {
+    margin-top: 0.25rem;
+    background-color: rgba(15, 23, 42, 0.95);
+    border-radius: 1rem;
+    padding: 1.5rem 1.5rem 1.75rem;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+}
+
+    .form-panel h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #f9fafb;
+        margin-bottom: 1rem;
+    }
+
+/* Grid de campos */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem 1.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+    .form-group label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #e5e7eb;
+    }
+
+.required {
+    color: #fb7185;
+    margin-left: 0.15rem;
+}
+
+/* Inputs / TextArea */
+
+.form-control {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid #1f2937;
+    background-color: #020617;
+    color: #ffffff;
+    font-size: 0.95rem;
+    padding: 0.55rem 0.8rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease, background-color 0.15s ease;
+}
+
+    .form-control::placeholder {
+        color: #ffffff;
+        opacity: 0.8;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #f97316;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.45);
+        background-color: #020617;
+        transform: translateY(-1px);
+    }
+
+/* Checkbox Activo */
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.15rem;
+}
+
+    .checkbox-group label {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #e5e7eb;
+    }
+
+/* Validación */
+
+.validation-message,
+.validation-message span,
+.validation-message div {
+    color: #fecaca;
+    font-size: 0.8rem;
+    margin-top: 0.2rem;
+}
+
+/* Botones del formulario */
+
+.button-group {
+    margin-top: 1.25rem;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.btn-secondary,
+.btn-submit {
+    padding: 0.6rem 1.4rem;
+    border-radius: 9999px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    transition: background-color 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease, opacity 0.12s ease;
+}
+
+/* Volver a la lista */
+
+.btn-secondary {
+    background-color: #020617;
+    color: #e5e7eb;
+    border: 1px solid #4b5563;
+}
+
+    .btn-secondary:hover:not([disabled]) {
+        background-color: #111827;
+    }
+
+/* Guardar / Actualizar */
+
+.btn-submit {
+    background: linear-gradient(135deg, #22c55e, #4ade80);
+    color: #052e16;
+    box-shadow: 0 10px 22px rgba(34, 197, 94, 0.55);
+}
+
+    .btn-submit:hover:not([disabled]) {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 30px rgba(34, 197, 94, 0.75);
+    }
+
+    .btn-submit[disabled],
+    .btn-secondary[disabled] {
+        opacity: 0.7;
+        cursor: default;
+        box-shadow: none;
+    }
+
+/* ============================
+   FILTROS (BUSCADOR + ESTADO)
+   ============================ */
+
+.header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 0.4rem;
+}
+
+/* Textbox y select de filtros */
+
+.search-input {
+    min-width: 180px;
+    flex: 1 1 180px;
+    border-radius: 9999px;
+    border: 1px solid #1f2937;
+    background-color: #020617;
+    color: #f9fafb;
+    font-size: 0.9rem;
+    padding: 0.45rem 0.9rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, transform 0.05s ease;
+}
+
+    .search-input::placeholder {
+        color: #9ca3af;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #f97316;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.45);
+        background-color: #020617;
+        transform: translateY(-1px);
+    }
+
+    /* Date inputs (si en algún momento se usan aquí) */
+    .search-input[type="date"] {
+        color-scheme: dark;
+        color: #e5e7eb;
+    }
+
+/* Botón limpiar filtros */
+
+.search-button {
+    padding: 0.5rem 1.1rem;
+    border-radius: 9999px;
+    border: 1px solid #f97316;
+    background-color: transparent;
+    color: #fed7aa;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
+}
+
+    .search-button:hover {
+        background: linear-gradient(135deg, #f97316, #fb923c);
+        color: #111827;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(248, 156, 72, 0.55);
+    }
+
+/* ============================
+   LISTA DE CATEGORÍAS (TABLA)
+   ============================ */
+
+.category-list {
+    margin-top: 0.5rem;
+}
+
+    /* Contenedor de tabla */
+
+    .category-list .table-responsive {
+        margin-top: 0.75rem;
+        border-radius: 1rem;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.95);
+    }
+
+    /* Encabezado de tabla (manteniendo estilo claro) */
+
+    .category-list thead.table-light th {
+        background-color: #e5e7eb !important;
+        color: #0f172a !important;
+        border-bottom: 1px solid #cbd5f5;
+        font-size: 0.88rem;
+    }
+
+    /* Filas */
+
+    .category-list table.table {
+        margin: 0;
+        border-collapse: collapse;
+    }
+
+        .category-list table.table tbody tr {
+            font-size: 0.9rem;
+        }
+
+            .category-list table.table tbody tr td,
+            .category-list table.table tbody tr th {
+                vertical-align: middle;
+                border-color: rgba(51, 65, 85, 0.8);
+            }
+
+    /* Zebra con fondo oscuro y texto blanco */
+
+    .category-list .table-striped > tbody > tr:nth-of-type(odd) > * {
+        --bs-table-accent-bg: rgba(15, 23, 42, 0.96);
+        color: #f9fafb;
+    }
+
+    .category-list .table-striped > tbody > tr:nth-of-type(even) > * {
+        background-color: #020617;
+        color: #f9fafb;
+    }
+
+    /* Botones dentro de la tabla */
+
+    .category-list .btn-group .btn {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 9999px;
+        border: none;
+        font-weight: 600;
+    }
+
+    /* Editar */
+
+    .category-list .btn-warning {
+        background: linear-gradient(135deg, #facc15, #f97316);
+        color: #451a03;
+        border: none;
+    }
+
+        .category-list .btn-warning:hover {
+            background: linear-gradient(135deg, #fde047, #fb923c);
+        }
+
+    /* Desactivar/Eliminar */
+
+    .category-list .btn-danger {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        border: none;
+    }
+
+        .category-list .btn-danger:hover {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+        }
+
+    /* Badges de estado */
+
+    .category-list .badge.bg-success {
+        background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+        color: #ecfdf5;
+        font-weight: 600;
+        border-radius: 9999px;
+        padding: 0.25rem 0.7rem;
+        font-size: 0.75rem;
+    }
+
+    .category-list .badge.bg-secondary {
+        background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+        color: #e5e7eb;
+        font-weight: 500;
+        border-radius: 9999px;
+        padding: 0.25rem 0.7rem;
+        font-size: 0.75rem;
+    }
+
+/* ============================
+   EMPTY STATE
+   ============================ */
+
+.empty-state {
+    padding: 3rem 0;
+    text-align: center;
+}
+
+    .empty-state h3 {
+        font-size: 1.25rem;
+        color: #f9fafb;
+        margin-bottom: 0.35rem;
+    }
+
+    .empty-state p {
+        color: #9ca3af;
+        font-size: 0.95rem;
+    }
+
+/* ============================
+   RESPONSIVE
+   ============================ */
+
+@media (max-width: 640px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-add {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .button-group {
+        justify-content: stretch;
+    }
+
+    .btn-secondary,
+    .btn-submit {
+        flex: 1;
+    }
+
+    .main-container {
+        padding-inline: 1.25rem;
+    }
+
+    .container {
+        padding-inline: 1.25rem;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-input {
+        width: 100%;
+        flex: 1 1 auto;
+    }
+
+    .search-button {
+        width: 100%;
+        justify-content: center;
+    }
+}

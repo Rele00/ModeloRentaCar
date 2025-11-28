@@ -1,0 +1,312 @@
+﻿@page "/devolver-renta/{RentaId:int}"
+@rendermode InteractiveServer
+
+@using RentCar.Data.Dtos
+@using RentCar.Data.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+
+@attribute [Authorize(Roles = "Admin,User")]
+@inject IRentaService RentaService
+@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+
+<div class="container devolver-renta-page">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-title">
+            <h1>Devolución de vehículo</h1>
+            <p>Registra la devolución y cierra la renta.</p>
+        </div>
+
+        <button class="btn-add" @onclick="IrARentasActivas">
+            ← Volver a rentas activas
+        </button>
+    </header>
+
+    @if (isLoading)
+    {
+        <p>Cargando información de la renta...</p>
+    }
+    else if (modeloDevolucion == null)
+    {
+        <div class="alert alert-error">
+            @mensaje ?? "No se encontró la renta o ya fue cerrada."
+        </div>
+    }
+    else
+    {
+        <div class="form-card">
+            @if (!string.IsNullOrEmpty(mensaje))
+            {
+                <div class="alert @(esError ? "alert-error" : "alert-success")">
+                    @mensaje
+                </div>
+            }
+
+            <!-- INFO RESUMEN RENTA -->
+            <div class="info-panel">
+                <h3>Datos de la renta</h3>
+                <p><strong>Cliente:</strong> @modeloDevolucion.NombreCliente</p>
+                <p><strong>Vehículo:</strong> @modeloDevolucion.DescripcionVehiculo</p>
+                <p><strong>Fecha salida:</strong> @modeloDevolucion.FechaSalida.ToShortDateString()</p>
+                <p><strong>Fecha estimada devolución:</strong> @modeloDevolucion.FechaEstimadaDevolucion.ToShortDateString()</p>
+                <p><strong>Precio diario:</strong> @modeloDevolucion.PrecioDiario.ToString("C2")</p>
+                <p><strong>Días estimados:</strong> @modeloDevolucion.CantidadDiasEstimada</p>
+                <p><strong>Monto estimado:</strong> @modeloDevolucion.MontoEstimado.ToString("C2")</p>
+                @if (modeloDevolucion.TotalFacturaActual.HasValue)
+                {
+                    <p><strong>Total factura actual:</strong> @modeloDevolucion.TotalFacturaActual.Value.ToString("C2")</p>
+                }
+            </div>
+
+            <!-- FORMULARIO DEVOLUCIÓN -->
+            <EditForm Model="modeloDevolucion" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha de devolución real</label>
+                        <InputDate class="form-control"
+                                   @bind-Value="modeloDevolucion.FechaDevolucionReal"
+                                   @onchange="OnDatosCambio" />
+                        <ValidationMessage For="@(() => modeloDevolucion.FechaDevolucionReal)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Recargo (ej. por atraso, daños)</label>
+                        <InputNumber class="form-control"
+                                     @bind-Value="modeloDevolucion.Recargo"
+                                     @oninput="OnDatosCambio" />
+                        <ValidationMessage For="@(() => modeloDevolucion.Recargo)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descuento</label>
+                        <InputNumber class="form-control"
+                                     @bind-Value="modeloDevolucion.Descuento"
+                                     @oninput="OnDatosCambio" />
+                        <ValidationMessage For="@(() => modeloDevolucion.Descuento)" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Notas / Observaciones</label>
+                    <InputTextArea class="form-control"
+                                   @bind-Value="modeloDevolucion.Notas" />
+                </div>
+
+                <div class="info-panel">
+                    <h3>Resumen calculado</h3>
+
+                    @if (!string.IsNullOrEmpty(mensajeCalculo))
+                    {
+                        <p class="@(advertenciaCalculo ? "text-warning" : "text-muted")">
+                            @mensajeCalculo
+                        </p>
+                    }
+
+                    @if (modeloDevolucion.MontoFinalCalculado.HasValue)
+                    {
+                        <p><strong>Días reales:</strong> @diasRealesCalculados</p>
+                        <p>
+                            <strong>Diferencia de días:</strong>
+                            @if (diferenciaDias == 0)
+                            {
+                                @:Sin diferencia (a tiempo)
+                            }
+                            else if (diferenciaDias > 0)
+                            {
+                                @($"{diferenciaDias} día(s) de atraso")
+                            }
+                            else
+                            {
+                                @($"{Math.Abs(diferenciaDias)} día(s) de devolución anticipada")
+                            }
+                        </p>
+                        <p>
+                            <strong>Monto final estimado (con recargos, descuentos e impuestos):</strong>
+                            @modeloDevolucion.MontoFinalCalculado.Value.ToString("C2")
+                        </p>
+                    }
+                    else
+                    {
+                        <p>El monto final se calculará cuando la fecha de devolución sea válida.</p>
+                    }
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit"
+                            class="btn-primary"
+                            disabled="@(!puedeGuardar || isSaving)">
+                        @(isSaving ? "Guardando..." : "Registrar devolución")
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int RentaId { get; set; }
+
+    private RentaDevolucionDto? modeloDevolucion;
+    private bool isLoading = true;
+    private bool isSaving = false;
+    private string? mensaje;
+    private bool esError;
+
+    // Para feedback del cálculo
+    private string? mensajeCalculo;
+    private bool advertenciaCalculo;
+    private int diasRealesCalculados;
+    private int diferenciaDias;
+
+    private bool puedeGuardar =>
+        modeloDevolucion != null &&
+        modeloDevolucion.MontoFinalCalculado.HasValue &&
+        !advertenciaCalculo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            modeloDevolucion = await RentaService.GetRentaParaDevolucionAsync(RentaId);
+
+            if (modeloDevolucion == null)
+            {
+                esError = true;
+                mensaje = "No se encontró la renta, ya fue cerrada o no está disponible para devolución.";
+            }
+            else
+            {
+                // Calculamos inicialmente un estimado con los datos actuales
+                CalcularMontoFinalLocal();
+            }
+        }
+        catch (Exception ex)
+        {
+            esError = true;
+            mensaje = "Ocurrió un error al cargar los datos de la renta.";
+            await JSRuntime.InvokeVoidAsync("console.error", ex.Message);
+            await JSRuntime.InvokeVoidAsync("alert", $"⚠️ Error al cargar la renta: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void IrARentasActivas()
+    {
+        Nav.NavigateTo("/rentas-activas");
+    }
+
+    private async Task OnValidSubmit()
+    {
+        if (modeloDevolucion == null)
+            return;
+
+        // Recalcular por seguridad antes de enviar
+        CalcularMontoFinalLocal();
+
+        if (advertenciaCalculo || !modeloDevolucion.MontoFinalCalculado.HasValue)
+        {
+            esError = true;
+            mensaje ??= "Corrige la fecha de devolución o los montos antes de guardar.";
+            await JSRuntime.InvokeVoidAsync("alert", "⚠️ No se puede registrar la devolución: revisa la fecha y los montos.");
+            return;
+        }
+
+        esError = false;
+        mensaje = null;
+        isSaving = true;
+
+        var (ok, error) = await RentaService.DevolverRentaAsync(modeloDevolucion);
+        isSaving = false;
+
+        if (ok)
+        {
+            mensaje = "La devolución se registró correctamente. La renta fue cerrada y el vehículo está disponible.";
+            await JSRuntime.InvokeVoidAsync("alert", "✅ Devolución registrada correctamente. El vehículo ahora está disponible.");
+
+            // Puedes dejar el mensaje y quedarte en la página,
+            // o redirigir directamente a rentas activas:
+            Nav.NavigateTo("/rentas-activas");
+        }
+        else
+        {
+            esError = true;
+            mensaje = error ?? "Ocurrió un error al registrar la devolución.";
+            await JSRuntime.InvokeVoidAsync("alert", $"⚠️ Error al registrar la devolución: {mensaje}");
+        }
+    }
+
+    private void OnDatosCambio(ChangeEventArgs _)
+    {
+        CalcularMontoFinalLocal();
+    }
+
+    private void CalcularMontoFinalLocal()
+    {
+        if (modeloDevolucion == null)
+            return;
+
+        mensajeCalculo = null;
+        advertenciaCalculo = false;
+        diasRealesCalculados = 0;
+        diferenciaDias = 0;
+        modeloDevolucion.MontoFinalCalculado = null;
+
+        // Validar fecha de devolución
+        if (modeloDevolucion.FechaDevolucionReal.Date < modeloDevolucion.FechaSalida.Date)
+        {
+            mensajeCalculo = "La fecha de devolución real no puede ser anterior a la fecha de salida.";
+            advertenciaCalculo = true;
+            return;
+        }
+
+        // Calcular días reales
+        var diasReales = (modeloDevolucion.FechaDevolucionReal.Date - modeloDevolucion.FechaSalida.Date).Days;
+        if (diasReales <= 0)
+        {
+            diasReales = 1;
+        }
+
+        diasRealesCalculados = diasReales;
+        diferenciaDias = diasReales - modeloDevolucion.CantidadDiasEstimada;
+
+        // Mensaje según diferencia
+        if (diferenciaDias == 0)
+        {
+            mensajeCalculo = "Devolución a tiempo. No hay diferencia en los días de renta.";
+        }
+        else if (diferenciaDias > 0)
+        {
+            mensajeCalculo = $"La renta tiene {diferenciaDias} día(s) de atraso. Puedes aplicar recargos si es necesario.";
+        }
+        else
+        {
+            mensajeCalculo = $"Devolución anticipada en {Math.Abs(diferenciaDias)} día(s). Puedes aplicar descuentos si corresponde.";
+        }
+
+        // Subtotal base
+        var subtotalBase = modeloDevolucion.PrecioDiario * diasReales;
+
+        // Aplicar recargos y descuentos
+        var subtotal = subtotalBase + modeloDevolucion.Recargo - modeloDevolucion.Descuento;
+        if (subtotal < 0)
+        {
+            subtotal = 0;
+        }
+
+        // Impuestos (ejemplo 18%)
+        var impuestos = subtotal * 0.18m;
+        var total = subtotal + impuestos;
+
+        modeloDevolucion.MontoFinalCalculado = total;
+    }
+}

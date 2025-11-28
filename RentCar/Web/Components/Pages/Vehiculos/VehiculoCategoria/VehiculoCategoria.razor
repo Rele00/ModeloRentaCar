@@ -1,0 +1,465 @@
+﻿@page "/categoria"
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using RentCar.Data.Dtos
+
+@attribute [Authorize(Roles = "Admin,User")]
+@inject ICategoriaService CategoriaService
+@inject IJSRuntime JSRuntime
+
+<div class="container">
+    <!-- HEADER SUPERIOR (se mantiene siempre) -->
+    <header class="header">
+        <div class="header-title">
+            <h1>Gestión de Categorías</h1>
+            <p>Administra las categorías de vehículos disponibles para renta.</p>
+        </div>
+
+        <!-- Botón principal: lista <-> formulario -->
+        <button class="btn-add" @onclick="OnHeaderButtonClick">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4v16m8-8H4" />
+            </svg>
+            @(mostrarFormulario
+                        ? "Ver lista de categorías"
+                        : (esEdicion ? "Editar categoría" : "Agregar categoría"))
+        </button>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="main-container">
+
+        @* MODO FORMULARIO: se ve SOLO el formulario *@
+        @if (mostrarFormulario)
+        {
+            <div class="form-panel">
+                <h3>@(esEdicion ? "Editar categoría" : "Agregar categoría")</h3>
+
+                @if (!string.IsNullOrEmpty(mensaje))
+                {
+                    <div class="alert @(esError ? "alert-error" : "alert-success")">
+                        @mensaje
+                    </div>
+                }
+
+            <EditForm Model="@categoriaActual" OnValidSubmit="GuardarCategoriaAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="validation-message" />
+
+                <div class="form-grid">
+
+                    <!-- Nombre de categoría -->
+                    <div class="form-group">
+                        <label for="nombreCategoria">
+                            Nombre de categoría <span class="required">*</span>
+                        </label>
+                        <InputText id="nombreCategoria"
+                                   class="form-control"
+                                   @bind-Value="categoriaActual.NombreCategoria"
+                                   placeholder="Ej: Económica, Premium, SUV..." />
+                        <ValidationMessage For="@(() => categoriaActual.NombreCategoria)" />
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="form-group">
+                        <label for="descripcion">Descripción</label>
+                        <InputTextArea id="descripcion"
+                                       class="form-control"
+                                       @bind-Value="categoriaActual.Descripcion"
+                                       rows="3"
+                                       placeholder="Descripción breve de la categoría" />
+                        <ValidationMessage For="@(() => categoriaActual.Descripcion)" />
+                    </div>
+
+                    <!-- Estado activo -->
+                    <div class="form-group">
+                        <label>Estado de la categoría</label>
+                        <div class="checkbox-group">
+                            <InputCheckbox id="esActivo"
+                                           @bind-Value="categoriaActual.Activo" />
+                            <label for="esActivo">Categoría activa</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="button"
+                            class="btn-secondary"
+                            @onclick="CerrarFormulario"
+                            disabled="@estaGuardando">
+                        Volver a la lista
+                    </button>
+
+                    <button type="submit"
+                            class="btn-submit"
+                            disabled="@estaGuardando">
+                        @(estaGuardando
+                                                ? "GUARDANDO..."
+                                                : (esEdicion ? "ACTUALIZAR" : "GUARDAR"))
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+                }
+        else
+        {
+            @* MODO LISTA: se ve SOLO el listado *@
+
+            <!-- ENCABEZADO DEL LISTADO -->
+            <div class="main-container-header">
+                <h2>Lista de categorías</h2>
+                <p>Organiza y edita las categorías usadas para clasificar los vehículos.</p>
+
+                @if (isLoading)
+                {
+                    <p>Cargando categorías...</p>
+                }
+                else if (categorias.Any())
+                {
+                    <small class="text-muted">
+                        Mostrando @categoriasFiltradas.Count() de @categorias.Count categorías ·
+                        Activas: @categorias.Count(c => c.Activo) · Inactivas: @categorias.Count(c => !c.Activo)
+                    </small>
+                }
+
+                @if (!string.IsNullOrEmpty(mensaje))
+                {
+                    <div class="alert @(esError ? "alert-error" : "alert-success")">
+                        @mensaje
+                    </div>
+                }
+
+                <!-- FILTROS -->
+                <div class="header-actions" style="margin-top:1rem;">
+                    <input type="text"
+                           class="search-input"
+                           placeholder="Buscar por nombre o descripción..."
+                           @bind="textoFiltro"
+                           @bind:event="oninput" />
+
+                    <select class="search-input"
+                            @bind="filtroEstado">
+                        <option value="Todos">Todos los estados</option>
+                        <option value="Activos">Solo activas</option>
+                        <option value="Inactivos">Solo inactivas</option>
+                    </select>
+
+                    <button type="button"
+                            class="search-button"
+                            @onclick="LimpiarFiltros">
+                        Limpiar filtros
+                    </button>
+                </div>
+            </div>
+
+            <!-- LISTA DE CATEGORÍAS -->
+            <div class="category-list">
+                @if (isLoading)
+                {
+                    <p>Cargando categorías...</p>
+                }
+                else if (categorias is null || !categorias.Any())
+                {
+                    <div class="empty-state">
+                        <h3>No hay categorías registradas</h3>
+                        <p>Haz clic en “Agregar categoría” para crear la primera.</p>
+                    </div>
+                }
+                else if (!categoriasFiltradas.Any())
+                {
+                    <div class="empty-state">
+                        <h3>No hay categorías que coincidan con el filtro</h3>
+                        <p>Prueba quitando filtros o buscando por otro nombre.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Acciones</th>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Activa</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var cat in categoriasFiltradas)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button class="btn btn-warning"
+                                                        @onclick="() => EditarCategoria(cat)">
+                                                    Editar
+                                                </button>
+                                                <button class="btn btn-danger"
+                                                        @onclick="() => EliminarCategoriaAsync(cat.Id)">
+                                                    @((cat.Activo ? "Desactivar" : "Eliminar"))
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td>@cat.Id</td>
+                                        <td>@cat.NombreCategoria</td>
+                                        <td>@cat.Descripcion</td>
+                                        <td>
+                                            @if (cat.Activo)
+                                            {
+                                                <span class="badge bg-success">Activa</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Inactiva</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    // Estado de UI
+    private bool mostrarFormulario = false;
+    private bool esEdicion = false;
+    private bool estaGuardando = false;
+    private bool isLoading = true;
+
+    // Datos
+    private List<CategoriaDto> categorias = new();
+    private CategoriaDto categoriaActual = new()
+    {
+        Activo = true
+    };
+
+    // Filtros
+    private string textoFiltro = string.Empty;
+    private string filtroEstado = "Todos"; // Todos / Activos / Inactivos
+
+    private IEnumerable<CategoriaDto> categoriasFiltradas =>
+        categorias
+            .Where(c =>
+                string.IsNullOrWhiteSpace(textoFiltro) ||
+                (c.NombreCategoria ?? string.Empty).Contains(textoFiltro, StringComparison.OrdinalIgnoreCase) ||
+                (c.Descripcion ?? string.Empty).Contains(textoFiltro, StringComparison.OrdinalIgnoreCase))
+            .Where(c =>
+                filtroEstado == "Todos" ||
+                (filtroEstado == "Activos" && c.Activo) ||
+                (filtroEstado == "Inactivos" && !c.Activo))
+            .OrderBy(c => c.NombreCategoria);
+
+    // Mensajes
+    private string? mensaje;
+    private bool esError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCategoriasAsync();
+    }
+
+    private async Task CargarCategoriasAsync()
+    {
+        isLoading = true;
+        esError = false;
+        mensaje = null;
+
+        try
+        {
+            categorias = await CategoriaService.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            esError = true;
+            mensaje = $"No se pudieron cargar las categorías: {ex.Message}";
+            Console.WriteLine(ex);
+            await JSRuntime.InvokeVoidAsync("alert", "⚠️ Ocurrió un error al cargar las categorías.");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void NuevaCategoria()
+    {
+        categoriaActual = new CategoriaDto
+        {
+            Activo = true
+        };
+        esEdicion = false;
+        mensaje = null;
+        esError = false;
+        mostrarFormulario = true;
+    }
+
+    private void EditarCategoria(CategoriaDto cat)
+    {
+        if (cat is null) return;
+
+        categoriaActual = new CategoriaDto
+        {
+            Id = cat.Id,
+            NombreCategoria = cat.NombreCategoria,
+            Descripcion = cat.Descripcion,
+            Activo = cat.Activo
+        };
+
+        esEdicion = true;
+        mensaje = null;
+        esError = false;
+        mostrarFormulario = true;
+    }
+
+    private async Task GuardarCategoriaAsync()
+    {
+        mensaje = null;
+        esError = false;
+
+        if (categoriaActual is null)
+            return;
+
+        // Validación básica manual: nombre obligatorio
+        var nombre = categoriaActual.NombreCategoria?.Trim();
+        if (string.IsNullOrWhiteSpace(nombre))
+        {
+            esError = true;
+            mensaje = "El nombre de la categoría es obligatorio.";
+            await JSRuntime.InvokeVoidAsync("alert", "⚠️ El nombre de la categoría es obligatorio.");
+            return;
+        }
+
+        // Normalizar nombre
+        categoriaActual.NombreCategoria = nombre;
+
+        // Validar duplicados
+        var existeDuplicada = categorias.Any(c =>
+            c.Id != categoriaActual.Id &&
+            !string.IsNullOrWhiteSpace(c.NombreCategoria) &&
+            string.Equals(c.NombreCategoria.Trim(), nombre, StringComparison.OrdinalIgnoreCase));
+
+        if (existeDuplicada)
+        {
+            esError = true;
+            mensaje = "Ya existe una categoría con ese nombre. Usa otro nombre o edita la categoría existente.";
+            await JSRuntime.InvokeVoidAsync("alert", "⚠️ Ya existe una categoría con ese nombre.");
+            return;
+        }
+
+        estaGuardando = true;
+
+        try
+        {
+            if (!esEdicion)
+            {
+                await CategoriaService.CreateAsync(categoriaActual);
+                mensaje = "Categoría creada correctamente.";
+                await JSRuntime.InvokeVoidAsync("alert", "✅ Categoría creada correctamente.");
+            }
+            else
+            {
+                await CategoriaService.UpdateAsync(categoriaActual);
+                mensaje = "Categoría actualizada correctamente.";
+                await JSRuntime.InvokeVoidAsync("alert", "✅ Categoría actualizada correctamente.");
+            }
+
+            // Recargar lista y volver al modo lista
+            await CargarCategoriasAsync();
+            mostrarFormulario = false;
+            esEdicion = false;
+
+            // Reset del modelo
+            categoriaActual = new CategoriaDto { Activo = true };
+        }
+        catch (Exception ex)
+        {
+            esError = true;
+            mensaje = $"Ocurrió un error al guardar la categoría: {ex.Message}";
+            Console.WriteLine(ex);
+            await JSRuntime.InvokeVoidAsync("alert", "⚠️ Error al guardar la categoría. Revisa los datos e inténtalo de nuevo.");
+        }
+        finally
+        {
+            estaGuardando = false;
+        }
+    }
+
+    private async Task EliminarCategoriaAsync(int id)
+    {
+        mensaje = null;
+        esError = false;
+
+        var cat = categorias.FirstOrDefault(c => c.Id == id);
+        var nombre = cat?.NombreCategoria ?? $"#{id}";
+
+        try
+        {
+            bool confirmado = await JSRuntime.InvokeAsync<bool>(
+                "confirm",
+                $"¿Estás seguro de que deseas desactivar la categoría \"{nombre}\"?");
+
+            if (!confirmado)
+                return;
+
+            await CategoriaService.DeactivateAsync(id);
+
+            mensaje = $"La categoría \"{nombre}\" fue desactivada correctamente.";
+            esError = false;
+            await JSRuntime.InvokeVoidAsync("alert", "✅ Categoría desactivada correctamente.");
+
+            await CargarCategoriasAsync();
+
+            if (categoriaActual.Id == id)
+            {
+                mostrarFormulario = false;
+                esEdicion = false;
+                categoriaActual = new CategoriaDto { Activo = true };
+            }
+        }
+        catch (Exception ex)
+        {
+            esError = true;
+            mensaje = $"Ocurrió un error al desactivar la categoría: {ex.Message}";
+            await JSRuntime.InvokeVoidAsync("alert", "⚠️ Error al desactivar la categoría.");
+            Console.WriteLine(ex);
+        }
+    }
+
+    private void CerrarFormulario()
+    {
+        mostrarFormulario = false;
+        mensaje = null;
+        esError = false;
+        esEdicion = false;
+        categoriaActual = new CategoriaDto { Activo = true };
+    }
+
+    // Botón del header: lista <-> formulario
+    private void OnHeaderButtonClick()
+    {
+        if (mostrarFormulario)
+        {
+            CerrarFormulario();
+        }
+        else
+        {
+            NuevaCategoria();
+        }
+    }
+
+    private void LimpiarFiltros()
+    {
+        textoFiltro = string.Empty;
+        filtroEstado = "Todos";
+    }
+}

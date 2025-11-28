@@ -1,0 +1,281 @@
+﻿/* ============================
+   Devolver renta - Layout base
+   ============================ */
+
+.devolver-renta-page {
+    max-width: 960px;
+    margin: 0 auto 3rem;
+    padding-block: 1.5rem 3rem;
+    color: #e5e7eb;
+}
+
+    /* HEADER superior reutilizando el estilo del resto del sistema */
+
+    .devolver-renta-page .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .devolver-renta-page .header-title h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #f9fafb;
+        margin-bottom: 0.35rem;
+    }
+
+    .devolver-renta-page .header-title p {
+        margin: 0;
+        color: #9ca3af;
+        font-size: 0.95rem;
+    }
+
+    /* Botón volver */
+
+    .devolver-renta-page .btn-add {
+        background: linear-gradient(135deg, #4b5563, #6b7280);
+        color: #f9fafb;
+        padding: 0.6rem 1.4rem;
+        border-radius: 9999px;
+        border: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        white-space: nowrap;
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.8);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+    }
+
+        .devolver-renta-page .btn-add:hover {
+            transform: translateY(-1px);
+            opacity: 0.96;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.95);
+        }
+
+    /* ============================
+   Tarjeta principal / Formulario
+   ============================ */
+
+    .devolver-renta-page .form-card {
+        background: radial-gradient(circle at top left, #111827 0, #020617 55%, #000000 100%);
+        border-radius: 1.25rem;
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        padding: 1.75rem 1.75rem 2rem;
+        box-shadow: 0 22px 55px rgba(0, 0, 0, 0.95);
+    }
+
+    /* Alertas */
+
+    .devolver-renta-page .alert {
+        margin-bottom: 1rem;
+        border-radius: 0.9rem;
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    .devolver-renta-page .alert-error {
+        background-color: rgba(127, 29, 29, 0.4);
+        border: 1px solid #b91c1c;
+        color: #fee2e2;
+    }
+
+    .devolver-renta-page .alert-success {
+        background-color: rgba(22, 101, 52, 0.4);
+        border: 1px solid #16a34a;
+        color: #dcfce7;
+    }
+
+    /* ============================
+   Panel de información resumen
+   ============================ */
+
+    .devolver-renta-page .info-panel {
+        margin-bottom: 1.5rem;
+        padding: 1.25rem 1.5rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), rgba(15, 23, 42, 0.95));
+    }
+
+        .devolver-renta-page .info-panel h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f9fafb;
+            margin-bottom: 0.75rem;
+        }
+
+        .devolver-renta-page .info-panel p {
+            margin-bottom: 0.25rem;
+            font-size: 0.92rem;
+        }
+
+            .devolver-renta-page .info-panel p strong {
+                color: #e5e7eb;
+            }
+
+    /* ============================
+   Formulario
+   ============================ */
+
+    .devolver-renta-page .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem 1.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .devolver-renta-page .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+        .devolver-renta-page .form-group label {
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #e5e7eb;
+        }
+
+    /* Inputs y textareas */
+
+    .devolver-renta-page .form-control,
+    .devolver-renta-page textarea.form-control {
+        width: 100%;
+        border-radius: 0.75rem;
+        border: 1px solid #1f2937;
+        background-color: #020617;
+        color: #ffffff;
+        font-size: 0.95rem;
+        padding: 0.55rem 0.8rem;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease, background-color 0.15s ease;
+        resize: vertical;
+    }
+
+        /* Placeholders blancos */
+
+        .devolver-renta-page .form-control::placeholder,
+        .devolver-renta-page textarea.form-control::placeholder {
+            color: #ffffff;
+            opacity: 0.9;
+        }
+
+        /* Focus */
+
+        .devolver-renta-page .form-control:focus,
+        .devolver-renta-page textarea.form-control:focus {
+            outline: none;
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.45);
+            background-color: #020617;
+            transform: translateY(-1px);
+        }
+
+    /* Date / number: asegurar estilo blanco */
+
+    .devolver-renta-page input[type="date"].form-control,
+    .devolver-renta-page input[type="number"].form-control {
+        color: #ffffff;
+    }
+
+        /* WebKit: texto interno de fecha/hora en blanco */
+        .devolver-renta-page input[type="date"].form-control::-webkit-datetime-edit {
+            color: #ffffff;
+        }
+
+        /* Icono del calendario en blanco (invertimos el color) */
+        .devolver-renta-page input[type="date"].form-control::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
+
+    /* Mensajes de validación */
+
+    .devolver-renta-page .validation-message,
+    .devolver-renta-page .validation-message span,
+    .devolver-renta-page .validation-message div {
+        color: #fecaca;
+        font-size: 0.8rem;
+        margin-top: 0.15rem;
+    }
+
+    /* ============================
+   Resumen calculado
+   ============================ */
+
+    .devolver-renta-page .text-warning {
+        color: #facc15 !important;
+    }
+
+    .devolver-renta-page .text-muted {
+        color: #9ca3af !important;
+    }
+
+    /* ============================
+   Botón principal
+   ============================ */
+
+    .devolver-renta-page .form-actions {
+        margin-top: 1.75rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .devolver-renta-page .btn-primary {
+        padding: 0.7rem 1.6rem;
+        border-radius: 9999px;
+        border: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+        color: #0b1120;
+        box-shadow: 0 12px 26px rgba(56, 189, 248, 0.5);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+    }
+
+        .devolver-renta-page .btn-primary:hover:not([disabled]) {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 32px rgba(56, 189, 248, 0.7);
+        }
+
+        .devolver-renta-page .btn-primary[disabled] {
+            opacity: 0.7;
+            cursor: default;
+            box-shadow: none;
+        }
+
+/* ============================
+   Responsive
+   ============================ */
+
+@media (max-width: 640px) {
+    .devolver-renta-page {
+        padding-inline: 1.25rem;
+    }
+
+        .devolver-renta-page .header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .devolver-renta-page .btn-add {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .devolver-renta-page .form-actions {
+            justify-content: stretch;
+        }
+
+        .devolver-renta-page .btn-primary {
+            width: 100%;
+        }
+}

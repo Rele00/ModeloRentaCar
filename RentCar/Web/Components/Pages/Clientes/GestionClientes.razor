@@ -1,0 +1,442 @@
+﻿@page "/gestion-clientes"
+
+@* Autorización *@
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin,User")]
+
+@using RentCar.Data.Dtos
+@using Microsoft.JSInterop
+
+@rendermode InteractiveServer
+
+@inject IClienteService ClienteService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Nav
+
+<div class="container-fluid py-3 clientes-page">
+
+    <!-- ENCABEZADO PRINCIPAL -->
+    <div class="d-print-none mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div>
+            <h2 class="mb-0">Gestión de clientes</h2>
+            <small class="text-muted">
+                Administra los clientes registrados en el sistema.
+            </small>
+        </div>
+
+        <div class="btn-group mt-2 mt-md-0">
+            <button @onclick="MostrarFormulario" class="btn btn-success">
+                <i class="bi bi-person-plus"></i> Agregar cliente
+            </button>
+            <button @onclick="CargarClientes" class="btn btn-outline-secondary">
+                ⟳ Recargar
+            </button>
+        </div>
+    </div>
+
+    @if (ShowForm)
+    {
+        <!-- FORMULARIO EN TARJETA -->
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10 col-xl-8">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            @(EsEdicion ? "Editar cliente" : "Registrar nuevo cliente")
+                        </h5>
+                       
+                    </div>
+
+                    <div class="card-body">
+                        <EditForm Model="@Request" OnValidSubmit="GuardarCliente">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary class="text-danger mb-3" />
+
+                            <div class="row g-3">
+                                <!-- Nombre -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Nombre</label>
+                                    <input class="form-control" @bind="Request.Nombre" type="text" />
+                                    <ValidationMessage For="() => Request.Nombre" class="text-danger small" />
+                                </div>
+
+                                <!-- Apellido -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Apellido</label>
+                                    <input class="form-control" @bind="Request.Apellido" type="text" />
+                                    <ValidationMessage For="() => Request.Apellido" class="text-danger small" />
+                                </div>
+
+                                <!-- Teléfono -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Teléfono</label>
+                                    <input class="form-control" @bind="Request.Telefono" type="tel" />
+                                    <ValidationMessage For="() => Request.Telefono" class="text-danger small" />
+                                </div>
+
+                                <!-- Cédula -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Cédula</label>
+                                    <input class="form-control" @bind="Request.Cedula" type="text" />
+                                    <ValidationMessage For="() => Request.Cedula" class="text-danger small" />
+                                </div>
+
+                                <!-- Correo -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Correo electrónico</label>
+                                    <input class="form-control" @bind="Request.Email" type="email" />
+                                    <ValidationMessage For="() => Request.Email" class="text-danger small" />
+                                </div>
+
+                                <!-- Licencia -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Licencia</label>
+                                    <input class="form-control" @bind="Request.Licencia" type="text" />
+                                    <ValidationMessage For="() => Request.Licencia" class="text-danger small" />
+                                </div>
+
+                                <!-- Vigencia licencia -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Vigencia de la licencia</label>
+                                    <input class="form-control" @bind="Request.VigenciaDeLicencia" type="date" />
+                                    <ValidationMessage For="() => Request.VigenciaDeLicencia" class="text-danger small" />
+                                </div>
+
+                                <!-- Cliente activo -->
+                                <div class="col-12 col-md-6 d-flex align-items-end">
+                                    <div class="form-check">
+                                        <InputCheckbox class="form-check-input" @bind-Value="Request.EsActivo" />
+                                        <label class="form-check-label ms-1">Cliente activo</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Botones -->
+                            <div class="mt-4 d-flex gap-2">
+                                <input type="submit"
+                                       value="@(EsEdicion ? "Actualizar" : "Guardar")"
+                                       class="btn btn-success" />
+                                <input @onclick="Cancelar"
+                                       type="button"
+                                       value="Cancelar"
+                                       id="btnCancelar"
+                                       class="btn btn-outline-secondary" />
+                            </div>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- ZONA DE FILTROS / ACCIONES -->
+        <div class="d-print-none mb-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-12 col-lg-7">
+                            <label class="form-label mb-1">Búsqueda rápida</label>
+                            <div class="input-group">
+                                <span class="input-group-text" id="lblBusqueda">--></span>
+                                <input @bind="Filtro"
+                                       type="text"
+                                       class="form-control"
+                                       id="txtboxConsultar"
+                                       placeholder="ID | Nombre | Apellido | Teléfono | Cédula | E-Mail | Licencia"
+                                       aria-label="filtro"
+                                       aria-describedby="lblBusqueda" />
+                                <button @onclick="Consultar"
+                                        class="btn btn-outline-primary"
+                                        id="btnBuscar">
+                                    Buscar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-3">
+                            <div class="form-check mt-3 mt-lg-4">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="flexCheckDefault"
+                                       checked="@SoloActivos"
+                                       @onchange="ClientesActivos" />
+                                <label class="form-check-label" for="flexCheckDefault">
+                                    Solo activos
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-2 d-flex justify-content-lg-end">
+                            <button class="btn btn-outline-secondary mt-3 mt-lg-4"
+                                    @onclick="Imprimir">
+                                Imprimir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TÍTULO PARA IMPRESIÓN -->
+        <h1 class="d-none d-print-block text-center mb-3">
+            Reporte de clientes
+        </h1>
+
+        <!-- LISTA DE CLIENTES: OCUPA CASI TODO EL ANCHO -->
+        <div class="clientes-lista-wrapper container-fluid px-0">
+            <div class="card shadow-sm w-100">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" class="d-print-none">Acciones</th>
+                                    <th scope="col">Código</th>
+                                    <th scope="col">Nombre</th>
+                                    <th scope="col">Apellido</th>
+                                    <th scope="col">Teléfono</th>
+                                    <th scope="col">Cédula</th>
+                                    <th scope="col">Correo electrónico</th>
+                                    <th scope="col">Licencia</th>
+                                    <th scope="col">Vigencia licencia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Listado.Count > 0)
+                                {
+                                    @foreach (var cliente in Listado)
+                                    {
+                                        <tr>
+                                            <td class="d-print-none">
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <button @onclick="() => EditarClienteClic(cliente)"
+                                                            class="btn btn-warning">
+                                                        Editar
+                                                    </button>
+                                                    <button @onclick="() => ConfirmarEliminacion(cliente.Id)"
+                                                            class="btn btn-danger">
+                                                        Eliminar
+                                                    </button>
+                                                </div>
+                                            </td>
+                                            <td>@cliente.Id</td>
+                                            <td>@cliente.Nombre</td>
+                                            <td>@cliente.Apellido</td>
+                                            <td>@cliente.Telefono</td>
+                                            <td>@cliente.Cedula</td>
+                                            <td>@cliente.Email</td>
+                                            <td>@cliente.Licencia</td>
+                                            <td>@cliente.VigenciaDeLicencia.ToShortDateString()</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="9">
+                                            <div class="alert alert-info border-2 text-center m-2">
+                                                @(!string.IsNullOrEmpty(Filtro)
+                                                                                        ? "No se encontraron resultados que coincidan con tu búsqueda. Intenta con otros términos o recarga la tabla."
+                                                                                        : "Aún no hay clientes activos registrados en el sistema.")
+                                    </div>
+                                </td>
+                            </tr>
+                                                        }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    // Filtro de búsqueda
+    public string Filtro { get; set; } = string.Empty;
+
+    // Lista de clientes para la tabla
+    public List<ClienteDto> Listado { get; set; } = [];
+
+    // Mostrar / ocultar formulario
+    public bool ShowForm { get; set; } = false;
+
+    // Modelo del formulario (solo DTO)
+    public ClienteDto Request { get; set; } = new();
+
+    // ¿Edición o creación?
+    private bool EsEdicion => Request.Id > 0;
+
+    // Mostrar solo activos
+    public bool SoloActivos { get; set; } = true;
+
+    protected override async Task OnInitializedAsync() => await CargarClientes();
+
+    private Task MostrarFormulario()
+    {
+        ShowForm = true;
+        return Task.CompletedTask;
+    }
+
+    private async Task Cancelar()
+    {
+        Request = new ClienteDto();
+        ShowForm = false;
+        await CargarClientes();
+        StateHasChanged();
+    }
+
+    // Usa SOLO DTOs con el servicio
+    private async Task GuardarCliente()
+    {
+        try
+        {
+            if (!EsEdicion)
+            {
+                var creado = await ClienteService.CreateAsync(Request);
+                Console.WriteLine($"Cliente creado: {System.Text.Json.JsonSerializer.Serialize(creado)}");
+                await JSRuntime.InvokeVoidAsync("alert", "Cliente registrado correctamente.");
+            }
+            else
+            {
+                var ok = await ClienteService.UpdateAsync(Request);
+                Console.WriteLine($"Cliente actualizado (ok={ok}): {System.Text.Json.JsonSerializer.Serialize(Request)}");
+                var mensaje = ok ? "Cliente actualizado correctamente." : "No se pudo actualizar el cliente (no encontrado).";
+                await JSRuntime.InvokeVoidAsync("alert", mensaje);
+            }
+
+            ShowForm = false;
+            Request = new ClienteDto();
+            await CargarClientes();
+            StateHasChanged();
+
+            // Nav.NavigateTo("/clientes/");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al guardar cliente: {ex}");
+            await JSRuntime.InvokeVoidAsync("alert", "Ocurrió un error al guardar el cliente.");
+        }
+    }
+
+    private async Task CargarClientes()
+    {
+        try
+        {
+            Listado = SoloActivos
+                ? await ClienteService.GetAll()
+                : await ClienteService.GetAllInactivesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar clientes: {ex}");
+            await JSRuntime.InvokeVoidAsync("alert", "Ocurrió un error al cargar la lista de clientes.");
+        }
+    }
+
+    private async Task Consultar()
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(Filtro))
+            {
+                var texto = Filtro.Trim();
+                var lower = texto.ToLower();
+                int.TryParse(texto, out var idFiltro);
+
+                var origen = SoloActivos
+                    ? await ClienteService.GetAll()
+                    : await ClienteService.GetAllAsync();
+
+                Listado = origen
+                    .Where(c =>
+                        (idFiltro > 0 && c.Id == idFiltro) ||
+                        (!string.IsNullOrEmpty(c.Nombre) && c.Nombre.ToLower().Contains(lower)) ||
+                        (!string.IsNullOrEmpty(c.Apellido) && c.Apellido.ToLower().Contains(lower)) ||
+                        (!string.IsNullOrEmpty(c.Telefono) && c.Telefono.Contains(texto)) ||
+                        (!string.IsNullOrEmpty(c.Cedula) && c.Cedula.Contains(texto)) ||
+                        (!string.IsNullOrEmpty(c.Email) && c.Email.ToLower().Contains(lower)) ||
+                        (!string.IsNullOrEmpty(c.Licencia) && c.Licencia.Contains(texto)))
+                    .ToList();
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Por favor, introduce datos válidos.");
+                await CargarClientes();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al consultar clientes: {ex}");
+            await JSRuntime.InvokeVoidAsync("alert", "Ocurrió un error al consultar los clientes.");
+        }
+    }
+
+    private Task EditarClienteClic(ClienteDto cliente)
+    {
+        Request = new ClienteDto
+        {
+            Id = cliente.Id,
+            Nombre = cliente.Nombre,
+            Apellido = cliente.Apellido,
+            Telefono = cliente.Telefono,
+            Cedula = cliente.Cedula,
+            Email = cliente.Email,
+            Licencia = cliente.Licencia,
+            VigenciaDeLicencia = cliente.VigenciaDeLicencia,
+            EsActivo = cliente.EsActivo
+        };
+
+        ShowForm = true;
+        return Task.CompletedTask;
+    }
+
+    private async Task ConfirmarEliminacion(int id)
+    {
+        try
+        {
+            bool confirmado = await JSRuntime.InvokeAsync<bool>(
+                "confirm",
+                $"¿Estás seguro de que deseas eliminar el cliente #{id}?");
+
+            if (confirmado)
+            {
+                var ok = await ClienteService.DeleteAsync(id);
+                Console.WriteLine($"Resultado eliminar cliente {id}: {ok}");
+
+                await CargarClientes();
+
+                var mensaje = ok
+                    ? $"Cliente #{id} eliminado éxitosamente."
+                    : $"No se pudo eliminar el cliente #{id}.";
+
+                await JSRuntime.InvokeVoidAsync("alert", mensaje);
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Sin cambios.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al eliminar cliente: {ex}");
+            await JSRuntime.InvokeVoidAsync("alert", "Ocurrió un error al eliminar el cliente.");
+        }
+    }
+
+    private async Task Imprimir()
+    {
+        await JSRuntime.InvokeVoidAsync("imprimirPagina");
+    }
+
+    private async Task ClientesActivos(ChangeEventArgs e)
+    {
+        if (bool.TryParse(e.Value?.ToString(), out var value))
+        {
+            SoloActivos = value;
+            await CargarClientes();
+            StateHasChanged();
+        }
+    }
+}

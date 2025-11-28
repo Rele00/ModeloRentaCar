@@ -1,0 +1,521 @@
+﻿@page "/lista-vehiculos"
+@rendermode InteractiveServer
+@using RentCar.Data.Dtos
+@inject IJSRuntime JSRuntime
+@inject IVehiculoService vehiculoService
+@inject ICategoriaService categoriaService
+@*Autorizacion*@
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin,User")]
+
+<div class="container">
+    <!-- HEADER SUPERIOR (se mantiene siempre) -->
+    <header class="header">
+        <div class="header-title">
+            <h1>Gestión de Vehículos</h1>
+            <p>Administra el catálogo de vehículos disponibles para renta.</p>
+        </div>
+
+        <!-- Botón principal: cuando estás viendo la lista, crea nuevo;
+             cuando estás en el formulario, vuelve a la lista -->
+        <button class="btn-add" @onclick="OnHeaderButtonClick">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            @(mostrarFormulario
+                        ? "Ver lista de vehículos"
+                        : (esEdicion ? "Nuevo vehículo" : "Agregar vehículo"))
+        </button>
+    </header>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="main-container">
+
+        @* MODO FORMULARIO: se ve SOLO el formulario *@
+        @if (mostrarFormulario)
+        {
+            <div class="form-panel">
+                <h3>@(esEdicion ? "Editar vehículo" : "Agregar vehículo")</h3>
+
+                <EditForm Model="@vehiculo" OnValidSubmit="SaveVehiculoAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="validation-message" />
+
+                    <div class="form-grid">
+                        <!-- Marca -->
+                        <div class="form-group">
+                            <label for="marca">Marca <span class="required">*</span></label>
+                            <InputText id="marca"
+                                       class="form-control"
+                                       @bind-Value="vehiculo.Marca"
+                                       placeholder="Ej: Toyota, Honda..." />
+                            <ValidationMessage For="() => vehiculo.Marca" />
+                        </div>
+
+                        <!-- Modelo -->
+                        <div class="form-group">
+                            <label for="modelo">Modelo <span class="required">*</span></label>
+                            <InputText id="modelo"
+                                       class="form-control"
+                                       @bind-Value="vehiculo.Modelo"
+                                       placeholder="Ej: Corolla, Civic, Focus" />
+                            <ValidationMessage For="() => vehiculo.Modelo" />
+                        </div>
+
+                        <!-- Año -->
+                        <div class="form-group">
+                            <label for="anio">Año <span class="required">*</span></label>
+                            <InputNumber id="anio"
+                                         class="form-control"
+                                         @bind-Value="vehiculo.Año" />
+                            <ValidationMessage For="() => vehiculo.Año" />
+                        </div>
+
+                        <!-- Color -->
+                        <div class="form-group">
+                            <label for="color">Color</label>
+                            <InputText id="color"
+                                       class="form-control"
+                                       @bind-Value="vehiculo.Color"
+                                       placeholder="Ej: Blanco, Negro" />
+                            <ValidationMessage For="() => vehiculo.Color" />
+                        </div>
+
+                        <!-- Placa -->
+                        <div class="form-group">
+                            <label for="placa">Placa <span class="required">*</span></label>
+                            <InputText id="placa"
+                                       class="form-control"
+                                       @bind-Value="vehiculo.Placa"
+                                       placeholder="Ej: ABC-123" />
+                            <ValidationMessage For="() => vehiculo.Placa" />
+                        </div>
+                        <!-- Precio -->
+                        <div class="form-group">
+                            <label for="precio">Precio <span class="required">*</span></label>
+                            <InputNumber id="placa"
+                                       class="form-control"
+                                       @bind-Value="vehiculo.PrecioPorDia"
+                                       placeholder="Ej: 10" />
+                            <ValidationMessage For="() => vehiculo.PrecioPorDia" />
+                        </div>
+
+                        <!-- Tipo de Vehículo -->
+                        <div class="form-group">
+                            <label for="tipoVehiculo">Tipo de Vehículo <span class="required">*</span></label>
+                            <InputSelect id="tipoVehiculo"
+                                         class="form-select"
+                                         @bind-Value="vehiculo.TipoVehiculo">
+                                <option value="">Seleccionar tipo</option>
+                                <option value="Sedan">Sedan</option>
+                                <option value="SUV">SUV</option>
+                                <option value="Camioneta">Camioneta</option>
+                                <option value="Deportivo">Deportivo</option>
+                                <option value="Van">Van</option>
+                            </InputSelect>
+                            <ValidationMessage For="() => vehiculo.TipoVehiculo" />
+                        </div>
+
+                        <!-- Categoría -->
+                        <div class="form-group">
+                            <label for="categoria">Categoría <span class="required">*</span></label>
+                            <InputSelect id="categoria"
+                                         class="form-select"
+                                         @bind-Value="vehiculo.CategoriaId">
+                                <option value="0">Seleccionar categoría</option>
+                                @foreach (var cat in categorias)
+                                {
+                                    <option value="@cat.Id">@cat.NombreCategoria</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="() => vehiculo.CategoriaId" />
+                        </div>
+
+                        <!-- Estado -->
+                        <div class="form-group">
+                            <label for="estado">Estado</label>
+                            <InputSelect id="estado"
+                                         class="form-select"
+                                         @bind-Value="vehiculo.Estado">
+                                <option value="Disponible">Disponible</option>
+                                <option value="Rentado">Rentado</option>
+                                <option value="Mantenimiento">Mantenimiento</option>
+                                <option value="No Disponible">No Disponible</option>
+                            </InputSelect>
+                            <ValidationMessage For="() => vehiculo.Estado" />
+                        </div>
+
+                        <!-- URL Imagen -->
+                        <div class="form-group">
+                            <label for="urlImagen">URL de Imagen <span class="required">*</span></label>
+                            <InputText id="urlImagen"
+                                       type="url"
+                                       class="form-control"
+                                       @bind-Value="vehiculo.ImageUrl"
+                                       placeholder="Ej: https://example.com/imagen.jpg" />
+                            <ValidationMessage For="() => vehiculo.ImageUrl" />
+                        </div>
+
+                        <!-- EsActivo -->
+                        <div class="form-group">
+                            <label>Estado del vehículo</label>
+                            <div class="checkbox-group">
+                                <InputCheckbox id="esActivo"
+                                               @bind-Value="vehiculo.EsActivo" />
+                                <label for="esActivo">Vehículo Activo</label>
+                            </div>
+                            <ValidationMessage For="() => vehiculo.EsActivo" />
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(mensajeError))
+                    {
+                        <div class="alert alert-danger">@mensajeError</div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(mensajeExito))
+                    {
+                        <div class="alert alert-success">@mensajeExito</div>
+                    }
+
+                    <div class="button-group">
+                        <button type="button"
+                                class="btn-secondary"
+                                @onclick="CerrarFormulario">
+                            Volver a la lista
+                        </button>
+
+
+                        <button type="submit"
+                                class="btn-submit"
+                                disabled="@estaGuardando">
+                            @(estaGuardando ? "GUARDANDO..." : (esEdicion ? "ACTUALIZAR" : "GUARDAR"))
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        }
+        else
+        {
+            @* MODO LISTA: se ve SOLO el listado con filtros *@
+
+            <!-- ENCABEZADO DEL LISTADO -->
+            <div class="main-container-header">
+                <h2>Lista de Vehículos</h2>
+                <p>Filtra por marca, modelo, placa, color, tipo o estado {Disponible, Rentado, Mantenimiento}.</p>
+
+                <div class="header-actions">
+                    <input type="text"
+                           class="search-input"
+                           placeholder="Buscar por marca, modelo, placa, color, tipo o estado..."
+                           @bind="textoBusqueda"
+                           @bind:event="oninput" />
+
+                    <button type="button"
+                            class="search-button"
+                            @onclick="LimpiarBusqueda">
+                        Limpiar
+                    </button>
+                </div>
+            </div>
+
+            <!-- LISTA DE VEHÍCULOS -->
+            <div class="vehicle-list">
+                @if (vehiculosFiltrados is null || !vehiculosFiltrados.Any())
+                {
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                  d="M3 16.5V8.25A2.25 2.25 0 0 1 5.25 6h3l2-3h3.5l2 3h3A2.25 2.25 0 0 1 21 8.25V16.5m-18 0A2.25 2.25 0 0 0 5.25 18.75h13.5A2.25 2.25 0 0 0 21 16.5m-18 0v-3.75A2.25 2.25 0 0 1 5.25 10.5h13.5A2.25 2.25 0 0 1 21 12.75v3.75" />
+                        </svg>
+                        <h3>No se encontraron vehículos</h3>
+                        <p>Prueba cambiando el texto de búsqueda o agrega un nuevo vehículo.</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var v in vehiculosFiltrados)
+                    {
+                        <div class="vehicle-card">
+                            <div class="vehicle-card-content">
+                                <img src="@(!string.IsNullOrWhiteSpace(v.ImageUrl)
+                                                                                      ? v.ImageUrl
+                                                                                      : "https://via.placeholder.com/400x300?text=Sin+imagen")"
+                         alt="@($"{v.Marca} {v.Modelo}")"
+                         class="vehicle-image" />
+
+                                <div class="vehicle-info">
+                                    <div>
+                                        <div class="vehicle-header">
+                                            <h3>@v.Marca @v.Modelo</h3>
+
+                                            <span class="status-badge @(v.Estado == "Disponible" ? "status-disponible" : "status-rentado")">
+                                                @v.Estado
+                                            </span>
+                                        </div>
+
+                                        <div class="vehicle-details">
+                                            <div class="detail-item">
+                                                <label>Año</label>
+                                                <p>@v.Año</p>
+                                            </div>
+                                            <div class="detail-item">
+                                                <label>Placa</label>
+                                                <p>@v.Placa</p>
+                                            </div>
+                                            <div class="detail-item">
+                                                <label>Color</label>
+                                                <p>@v.Color</p>
+                                            </div>
+                                            <div class="detail-item">
+                                                <label>Tipo</label>
+                                                <p>@v.TipoVehiculo</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="action-buttons">
+                                        <button class="btn btn-edit" @onclick="() => EditarVehiculo(v)">
+                                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                            Editar
+                                        </button>
+
+                                        <button class="btn btn-delete" @onclick="() => EliminarVehiculoAsync(v.Id)">
+                                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        }
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    // Formulario
+    private VehiculoDto vehiculo = new()
+    {
+        EsActivo = true,
+        Estado = "Disponible"
+    };
+
+    // Datos
+    private List<VehiculoDto> vehiculos = new();
+    private List<CategoriaDto> categorias = new();
+
+    // Estado de UI
+    private bool esEdicion = false;
+    private bool mostrarFormulario = false;
+    private bool estaGuardando = false;
+
+    private string? mensajeError;
+    private string? mensajeExito;
+
+    // Búsqueda
+    private string textoBusqueda = string.Empty;
+
+    // Vista filtrada (corregí un solo | por ||)
+    private IEnumerable<VehiculoDto> vehiculosFiltrados =>
+        string.IsNullOrWhiteSpace(textoBusqueda)
+            ? vehiculos
+            : vehiculos.Where(v =>
+                (v.Marca ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (v.Color ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (v.TipoVehiculo ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (v.Modelo ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (v.Placa ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (v.Estado ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarCategoriasAsync();
+        await CargarVehiculosAsync();
+    }
+
+    private async Task CargarCategoriasAsync()
+    {
+        try
+        {
+            categorias = await categoriaService.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudieron cargar las categorías: {ex.Message}";
+        }
+    }
+
+    private async Task CargarVehiculosAsync()
+    {
+        try
+        {
+            vehiculos = await vehiculoService.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudieron cargar los vehículos: {ex.Message}";
+        }
+    }
+
+    private void NuevoVehiculo()
+    {
+        vehiculo = new VehiculoDto
+        {
+            EsActivo = true,
+            Estado = "Disponible"
+        };
+        esEdicion = false;
+        mensajeError = null;
+        mensajeExito = null;
+        mostrarFormulario = true;
+    }
+
+    private void EditarVehiculo(VehiculoDto seleccionado)
+    {
+        if (seleccionado is null) return;
+
+        vehiculo = new VehiculoDto
+        {
+            Id = seleccionado.Id,
+            Marca = seleccionado.Marca,
+            Modelo = seleccionado.Modelo,
+            Año = seleccionado.Año,
+            Placa = seleccionado.Placa,
+            PrecioPorDia = seleccionado.PrecioPorDia,
+            Color = seleccionado.Color,
+            TipoVehiculo = seleccionado.TipoVehiculo,
+            CategoriaId = seleccionado.CategoriaId,
+            Estado = seleccionado.Estado,
+            ImageUrl = seleccionado.ImageUrl,
+            EsActivo = seleccionado.EsActivo,
+            FechaRegistro = seleccionado.FechaRegistro
+        };
+
+        esEdicion = true;
+        mensajeError = null;
+        mensajeExito = null;
+        mostrarFormulario = true;
+    }
+
+    private async Task SaveVehiculoAsync()
+    {
+        mensajeError = null;
+        mensajeExito = null;
+        estaGuardando = true;
+
+        try
+        {
+            if (vehiculo.CategoriaId == 0)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", "Debe seleccionar una categoría.");
+                return;
+            }
+
+            if (!esEdicion)
+            {
+                await vehiculoService.CreateAsync(vehiculo); // Ajusta a tu firma real
+                await JSRuntime.InvokeVoidAsync("alert", "Vehículo agregado correctamente.");
+            }
+            else
+            {
+                var ok = await vehiculoService.UpdateAsync(vehiculo.Id, vehiculo); // Ajusta a tu firma real
+                if (!ok)
+                {
+                    mensajeError = "No se encontró el vehículo a actualizar.";
+                    return;
+                }
+
+                await JSRuntime.InvokeVoidAsync("alert", "Vehículo actualizado correctamente.");
+            }
+
+            await CargarVehiculosAsync();
+            mostrarFormulario = false; // Vuelve a la lista después de guardar
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"Ocurrió un error al guardar el vehículo: {ex.Message}";
+            await JSRuntime.InvokeVoidAsync("alert", "Error al guardar el vehiculo");
+        }
+        finally
+        {
+            estaGuardando = false;
+        }
+    }
+
+    private async Task EliminarVehiculoAsync(int id)
+    {
+        mensajeError = null;
+        mensajeExito = null;
+
+        try
+        {
+            bool confirmado = await JSRuntime.InvokeAsync<bool>("confirm", $"¿Estás seguro de que deseas eliminar el Vehiculo #{id}?");
+            if (confirmado)
+            {
+                await vehiculoService.EliminateAsync(id); // Ajustado al real
+                await JSRuntime.InvokeVoidAsync("alert", $"Vehiculo {id} Eliminado éxitosamente.");
+                await CargarVehiculosAsync();
+            }
+
+            if (vehiculo.Id == id)
+            {
+                mostrarFormulario = false;
+                esEdicion = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", "Ocurrió un error al eliminar el vehículo");
+            mensajeError = $"Ocurrió un error al eliminar el vehículo: {ex.Message}";
+        }
+    }
+
+    private async Task EliminarActualAsync()
+    {
+        if (vehiculo.Id > 0)
+        {
+            await EliminarVehiculoAsync(vehiculo.Id);
+        }
+    }
+
+    private void CerrarFormulario()
+    {
+        mostrarFormulario = false;
+        mensajeError = null;
+        mensajeExito = null;
+    }
+
+    private async Task Imprimir()
+    {
+        await JSRuntime.InvokeVoidAsync("imprimirPagina");
+    }
+
+    private void LimpiarBusqueda()
+    {
+        textoBusqueda = string.Empty;
+    }
+
+    // Lógica del botón del header
+    private void OnHeaderButtonClick()
+    {
+        if (mostrarFormulario)
+        {
+            // Si estoy en el formulario, al hacer clic vuelvo a la lista
+            CerrarFormulario();
+        }
+        else
+        {
+            // Si estoy en la lista, al hacer clic abro un nuevo vehículo
+            NuevoVehiculo();
+        }
+    }
+}

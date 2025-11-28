@@ -1,0 +1,242 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using RentCar.Data.Context
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager NavigationManager
+
+<div class="home-shell">
+    <!-- TOPBAR CON COLORES ORIGINALES -->
+    <header class="topbar-home">
+        <div class="topbar-inner">
+            <!-- Logo y marca -->
+            <a href="/" class="topbar-brand">
+                <img src="/img/logo.jpg" alt="RentCar" class="topbar-logo" />
+                <div class="topbar-brand-text">
+                    <span class="brand-title">RentCar</span>
+                    <span class="brand-subtitle">Drive your freedom</span>
+                </div>
+            </a>
+
+            <!-- Menú hamburguesa para móvil -->
+            <button class="mobile-menu-toggle" @onclick="ToggleMobileMenu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <!-- Contenedor derecho -->
+            <div class="topbar-right-section @(mobileMenuOpen ? "mobile-open" : "")">
+                <!-- Navegación principal -->
+                <nav class="topbar-nav">
+                    <AuthorizeView>
+                        <Authorized Context="auth">
+                            <!-- Enlace común para todos los usuarios autenticados -->
+                            <NavLink href="/" Match="NavLinkMatch.All" class="nav-link" @onclick="CloseMobileMenu">
+                                Inicio
+                            </NavLink>
+
+                            @* ==== NAV POR ROL ==== *@
+
+                            @if (auth.User.IsInRole("Admin"))
+                            {
+                                <!-- ADMIN: puede ver TODO -->
+                                <NavLink href="/Dashboard" class="nav-link" @onclick="CloseMobileMenu">
+                                    Dashboard
+                                </NavLink>
+
+                                <NavLink href="/panel-navegacion" class="nav-link" @onclick="CloseMobileMenu">
+                                    Navegacion
+                                </NavLink>
+
+                                <NavLink href="/lista-vehiculos" class="nav-link" @onclick="CloseMobileMenu">
+                                    Gestion-Vehiculos
+                                </NavLink>
+                                <NavLink href="/gestion-clientes" class="nav-link" @onclick="CloseMobileMenu">
+                                    Clientes
+                                </NavLink>
+
+
+
+                            }
+                            else if (auth.User.IsInRole("User"))
+                            {
+                                <!-- USER: gestión de vehículos + gestión clientes + vista cliente -->
+                                <NavLink href="/panel-navegacion" class="nav-link" @onclick="CloseMobileMenu">
+                                    Navegacion
+                                </NavLink>
+
+                                <NavLink href="/lista-vehiculos" class="nav-link" @onclick="CloseMobileMenu">
+                                    Gestion-Vehiculos
+                                </NavLink>
+
+                                <NavLink href="/gestion-clientes" class="nav-link" @onclick="CloseMobileMenu">
+                                    Clientes
+                                </NavLink>
+
+                            }
+                            else if (auth.User.IsInRole("Client"))
+                            {
+                                <!-- CLIENTE: solo páginas sin gestión -->
+                                <NavLink href="/ver-vehiculos" class="nav-link" @onclick="CloseMobileMenu">
+                                    Vehículos
+                                </NavLink>
+                                <!-- Enlaces comunes a cualquier rol autenticado -->
+                                <NavLink href="/conocenos" class="nav-link" @onclick="CloseMobileMenu">
+                                    Conócenos
+                                </NavLink>
+                                <NavLink href="/contactos" class="nav-link" @onclick="CloseMobileMenu">
+                                    Contactos
+                                </NavLink>
+                            }
+
+
+                        </Authorized>
+
+                        <NotAuthorized>
+                            <!-- Usuario no autenticado: solo vista pública -->
+                            <NavLink href="/" Match="NavLinkMatch.All" class="nav-link" @onclick="CloseMobileMenu">
+                                Inicio
+                            </NavLink>
+                            <NavLink href="/ver-vehiculos" class="nav-link" @onclick="CloseMobileMenu">
+                                Vehículos
+                            </NavLink>
+                            <NavLink href="/conocenos" class="nav-link" @onclick="CloseMobileMenu">
+                                Conócenos
+                            </NavLink>
+                            <NavLink href="/contactos" class="nav-link" @onclick="CloseMobileMenu">
+                                Contactos
+                            </NavLink>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </nav>
+
+                <!-- Acciones de usuario -->
+                <div class="topbar-actions">
+                    <AuthorizeView>
+                        <Authorized Context="auth">
+                            <div class="header-sign">
+                                <div class="dropdown user-menu" id="toggleDropdown">
+                                    <!-- BOTÓN que abre y cierra el menú -->
+                                    <span class="user-toggle"
+                                            type="button"
+                                            @onclick="ShowUserMenu"
+                                            @onblur="HideUserMenu">
+                                        <span class="user-avatar">👤</span>
+                                        <!-- Nombre / correo COMPLETO -->
+                                        <span class="user-name"><a href="/Account/Manage" style="text-decoration: none; color: black;">@auth.User.Identity?.Name</a></span>
+
+                                    </span>
+
+                                    <!-- LISTA del dropdown, controlada por isUserMenuActive -->
+                                    <ul class="user-dropdown @(isUserMenuActive ? "show" : "")">
+                                        <li class="dropdown-item">
+                                            <a class="dropdown-link" href="/Account/Manage" @onclick="CloseAllMenus">
+                                                <span class="text-md">Editar usuario</span>
+                                            </a>
+                                        </li>
+                                        <li class="dropdown-item">
+                                            <a class="dropdown-link"
+                                               href="/Account/Logout"
+                                               @onclick:preventDefault="true">
+                                                <span class="text-md">Cerrar sesión</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </Authorized>
+
+                        <NotAuthorized>
+                            <NavLink href="Account/Login" class="topbar-link" @onclick="CloseMobileMenu">
+                                Iniciar sesión
+                            </NavLink>
+                        </NotAuthorized>
+                    </AuthorizeView>
+
+                    <!-- BOTÓN AZUL: ahora CERRAR SESIÓN cuando está logueado -->
+                    <AuthorizeView>
+                        <Authorized>
+                            <a href="/Account/Logout"
+                               class="topbar-cta topbar-cta-logout"
+                               @onclick:preventDefault="true">
+                                Cerrar sesión
+                            </a>
+                        </Authorized>
+                        <NotAuthorized>
+                            <!-- Si no está logueado, mantenemos "Reservar ahora" -->
+                            <a href="#contacto" class="topbar-cta" @onclick="CloseMobileMenu">
+                                Reservar ahora
+                            </a>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+
+            <!-- Overlay para móvil -->
+            <div class="mobile-overlay @(mobileMenuOpen ? "active" : "")" @onclick="CloseAllMenus"></div>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <div class="main-content">
+        <main class="app-content">
+            @Body
+        </main>
+    </div>
+</div>
+
+@code {
+    private bool mobileMenuOpen = false;
+
+    // === Dropdown del usuario ===
+    private bool isUserMenuActive = false;
+
+    private void ShowUserMenu()
+    {
+        //isUserMenuActive = true;
+        NavigationManager.NavigateTo("/Account/Manage");
+    }
+
+    private void HideUserMenu()
+    {
+        isUserMenuActive = false;
+    }
+
+    private void ToggleMobileMenu()
+    {
+        mobileMenuOpen = !mobileMenuOpen;
+
+        if (mobileMenuOpen)
+            isUserMenuActive = false;
+    }
+
+    private void CloseMobileMenu()
+    {
+        mobileMenuOpen = false;
+        StateHasChanged();
+    }
+
+    private void CloseAllMenus()
+    {
+        mobileMenuOpen = false;
+        isUserMenuActive = false;
+        StateHasChanged();
+    }
+
+    // private Task LogOutAsync()
+    // {
+    //     // redirige a la página de logout
+    //     NavigationManager.NavigateTo("/Account/Logout", forceLoad: true);
+
+    //     // devolvemos una Task completada para que encaje con @onclick
+    //     return Task.CompletedTask;
+    // }
+
+    public void Dispose()
+    {
+        // No usamos eventos aquí, así que nada que desuscribir
+    }
+}

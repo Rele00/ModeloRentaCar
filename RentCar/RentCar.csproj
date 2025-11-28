@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-RentCar-3d7ec435-656c-4a1f-942f-fbf97056426a</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Web\Components\Pages\Agregar\**" />
+    <Content Remove="Web\Components\Pages\Agregar\**" />
+    <EmbeddedResource Remove="Web\Components\Pages\Agregar\**" />
+    <None Remove="Web\Components\Pages\Agregar\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.21" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.21" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.21" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.21" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\Vehicle_Images\" />
+  </ItemGroup>
+
+</Project>

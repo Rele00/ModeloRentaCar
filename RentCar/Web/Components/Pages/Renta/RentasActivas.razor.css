@@ -1,0 +1,234 @@
+﻿/* ============================
+   RENTAS ACTIVAS - TEMA OSCURO NARANJA
+   ============================ */
+
+/* Contenedor principal */
+.container {
+    max-width: 1200px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem 2.5rem;
+    color: #e5e7eb;
+}
+
+/* ----------------------------
+   HEADER
+   ---------------------------- */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.header-title h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f9fafb;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.25rem;
+}
+
+.header-title p {
+    color: #9ca3af;
+    font-size: 0.95rem;
+}
+
+/* Botón "+ Nueva renta" */
+.btn-add {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #022c22;
+    padding: 0.6rem 1.5rem;
+    border: none;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 12px 26px rgba(22, 163, 74, 0.45);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.12s ease;
+}
+
+    .btn-add:hover {
+        transform: translateY(-1px);
+        opacity: 0.97;
+        box-shadow: 0 16px 34px rgba(22, 163, 74, 0.75);
+    }
+
+/* ----------------------------
+   MENSAJES GLOBALES
+   ---------------------------- */
+
+.alert {
+    margin-bottom: 1.25rem;
+    border-radius: 0.8rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+}
+
+.alert-success {
+    background-color: rgba(22, 163, 74, 0.18);
+    border: 1px solid #22c55e;
+    color: #bbf7d0;
+}
+
+.alert-error {
+    background-color: rgba(185, 28, 28, 0.2);
+    border: 1px solid #ef4444;
+    color: #fecaca;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+    border-color: #93c5fd;
+    color: #1e3a8a;
+}
+
+/* Texto de carga */
+.container > p {
+    margin-top: 1rem;
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* ----------------------------
+   GRID DE CARDS DE RENTAS
+   ---------------------------- */
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Card base */
+.renta-card {
+    background: radial-gradient(circle at top left, #111827 0, #020617 65%, #000000 100%);
+    border-radius: 1.1rem;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+    .renta-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(249, 115, 22, 0.7);
+        box-shadow: 0 26px 60px rgba(0, 0, 0, 1);
+    }
+
+    /* Header de la card */
+    .renta-card .card-header {
+        padding: 0.9rem 1rem 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        border-bottom: 1px solid rgba(55, 65, 81, 0.9);
+        background: radial-gradient(circle at top left, #020617 0, #0b1120 60%);
+    }
+
+        .renta-card .card-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f9fafb;
+            margin: 0;
+        }
+
+    /* Badge de estado de la renta */
+    .renta-card .badge {
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+        color: #0b1120;
+        box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.7), 0 0 16px rgba(56, 189, 248, 0.6);
+    }
+
+    /* Body de la card */
+    .renta-card .card-body {
+        padding: 0.9rem 1rem 0.8rem;
+        font-size: 0.9rem;
+    }
+
+        .renta-card .card-body p {
+            margin-bottom: 0.25rem;
+        }
+
+            .renta-card .card-body p strong {
+                color: #e5e7eb;
+            }
+
+        /* Línea de estado de tiempo (usa las clases generadas en C#) */
+        .renta-card .card-body .text-danger {
+            color: #fecaca !important;
+            font-weight: 600;
+        }
+
+        .renta-card .card-body .text-warning {
+            color: #facc15 !important;
+            font-weight: 600;
+        }
+
+        .renta-card .card-body .text-muted {
+            color: #9ca3af !important;
+        }
+
+    /* Footer de la card */
+    .renta-card .card-footer {
+        padding: 0.75rem 1rem 1rem;
+        border-top: 1px solid rgba(55, 65, 81, 0.85);
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    /* Botón "Devolver vehículo" */
+    .renta-card .btn-primary {
+        background: linear-gradient(135deg, #f97316, #fb923c);
+        color: #111827;
+        padding: 0.5rem 1.3rem;
+        border-radius: 999px;
+        border: none;
+        font-weight: 700;
+        font-size: 0.88rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        box-shadow: 0 12px 30px rgba(249, 115, 22, 0.6);
+        transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.1s ease;
+    }
+
+        .renta-card .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 40px rgba(249, 115, 22, 0.8);
+            opacity: 0.97;
+        }
+
+/* ----------------------------
+   RESPONSIVE
+   ---------------------------- */
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .btn-add {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+    }
+}
+
+@media (max-width: 640px) {
+    .container {
+        padding-inline: 1rem;
+    }
+}

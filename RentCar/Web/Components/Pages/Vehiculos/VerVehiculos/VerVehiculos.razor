@@ -1,0 +1,249 @@
+﻿@page "/ver-vehiculos"
+@rendermode InteractiveServer
+
+@using RentCar.Data.Dtos
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.JSInterop
+
+@inject IVehiculoService vehiculoService
+@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+
+<div class="container customer-vehicles">
+    <!-- HEADER SUPERIOR (SOLO LECTURA) -->
+    <header class="header">
+        <div class="header-title">
+            <h1>Vehículos disponibles</h1>
+            <p>Explora nuestra flota y elige el vehículo ideal para tu renta.</p>
+        </div>
+    </header>
+
+    @if (!string.IsNullOrEmpty(mensajeError))
+    {
+        <div class="alert alert-error">
+            @mensajeError
+        </div>
+    }
+
+    <!-- FILTROS BÁSICOS -->
+    <section class="main-container">
+        <div class="main-container-header">
+            <h2>Catálogo para clientes</h2>
+            <p>Filtra por marca, modelo, placa, color o tipo (solo se muestran vehículos disponibles).</p>
+
+            <div class="header-actions">
+                <input type="text"
+                       class="search-input"
+                       placeholder="Buscar por marca, modelo, placa, color o tipo..."
+                       @bind="textoBusqueda"
+                       @bind:event="oninput" />
+
+                <button type="button"
+                        class="search-button"
+                        @onclick="LimpiarBusqueda">
+                    Limpiar
+                </button>
+            </div>
+        </div>
+
+        <!-- LISTA DE VEHÍCULOS (SOLO DISPONIBLES) -->
+        <div class="vehicle-list">
+            @if (vehiculosDisponiblesFiltrados is null || !vehiculosDisponiblesFiltrados.Any())
+            {
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor">
+                        <path stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="1.5"
+                              d="M3 16.5V8.25A2.25 2.25 0 0 1 5.25 6h3l2-3h3.5l2 3h3A2.25 2.25 0 0 1 21 8.25V16.5m-18 0A2.25 2.25 0 0 0 5.25 18.75h13.5A2.25 2.25 0 0 0 21 16.5m-18 0v-3.75A2.25 2.25 0 0 1 5.25 10.5h13.5A2.25 2.25 0 0 1 21 12.75v3.75" />
+                    </svg>
+                    <h3>No hay vehículos disponibles en este momento</h3>
+                    <p>Vuelve más tarde o contáctanos para más información.</p>
+                </div>
+            }
+            else
+            {
+                <div class="vehicle-grid">
+                    @foreach (var v in vehiculosDisponiblesFiltrados)
+                    {
+                        <article class="vehicle-card">
+                            <div class="vehicle-card-image-wrapper">
+                                <img src="@(!string.IsNullOrWhiteSpace(v.ImageUrl)
+                                                                                 ? v.ImageUrl
+                                                                                 : "https://via.placeholder.com/400x300?text=Sin+imagen")"
+                             alt="@($"{v.Marca} {v.Modelo}")"
+                             class="vehicle-image" />
+                        <span class="status-badge status-disponible">
+                            Disponible
+                        </span>
+                    </div>
+
+                            <div class="vehicle-card-body">
+                                <header class="vehicle-card-header">
+                                    <h3>@v.Marca @v.Modelo</h3>
+                                    <p class="vehicle-subtitle">
+                                        @v.TipoVehiculo · @v.Año
+                                    </p>
+                                </header>
+
+                                <dl class="vehicle-meta">
+                                    <div class="meta-item">
+                                        <dt>Placa</dt>
+                                        <dd>@v.Placa</dd>
+                                    </div>
+                                    <div class="meta-item">
+                                        <dt>Color</dt>
+                                        <dd>@v.Color</dd>
+                                    </div>
+                                    <div class="meta-item">
+                                        <dt>Precio por día</dt>
+                                        <dd>@v.PrecioPorDia.ToString("C2")</dd>
+                                    </div>
+                                </dl>
+
+                                <div class="vehicle-card-footer">
+                                    <button type="button"
+                                            class="btn-primary"
+                                            @onclick="() => OnSolicitarRentaAsync(v)">
+                                        Solicitar renta
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                                }
+                </div>
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    // Datos
+    private List<VehiculoDto> vehiculos = new();
+
+    // Búsqueda
+    private string textoBusqueda = string.Empty;
+
+    // Mensajes (errores de carga)
+    private string? mensajeError;
+
+    // Info de roles
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+    private bool estaAutenticado;
+    private bool esAdminOUser;
+    private bool esCliente;
+
+    // Solo vehículos activos y en estado "Disponible"
+    private IEnumerable<VehiculoDto> vehiculosDisponiblesFiltrados =>
+        vehiculos
+            .Where(v =>
+                v.EsActivo &&
+                string.Equals(v.Estado, "Disponible", StringComparison.OrdinalIgnoreCase))
+            .Where(v =>
+                string.IsNullOrWhiteSpace(textoBusqueda) ||
+                (v.Marca ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (v.Color ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (v.TipoVehiculo ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (v.Modelo ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (v.Placa ?? string.Empty).Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarRolesAsync();
+
+        try
+        {
+            vehiculos = await vehiculoService.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            mensajeError = $"No se pudieron cargar los vehículos: {ex.Message}";
+            await JSRuntime.InvokeVoidAsync("console.error", mensajeError);
+            await JSRuntime.InvokeVoidAsync("alert", "⚠️ Ocurrió un error al cargar los vehículos. Intente más tarde.");
+        }
+    }
+
+    private async Task CargarRolesAsync()
+    {
+        if (AuthenticationStateTask is null)
+        {
+            estaAutenticado = false;
+            esAdminOUser = false;
+            esCliente = false;
+            return;
+        }
+
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
+
+        estaAutenticado = user.Identity?.IsAuthenticated ?? false;
+
+        if (estaAutenticado)
+        {
+            esAdminOUser = user.IsInRole("Admin") || user.IsInRole("User");
+            esCliente = user.IsInRole("Cliente"); // ajusta el nombre si tu rol se llama distinto
+        }
+        else
+        {
+            esAdminOUser = false;
+            esCliente = false;
+        }
+    }
+
+    private void LimpiarBusqueda()
+    {
+        textoBusqueda = string.Empty;
+    }
+
+    private async Task OnSolicitarRentaAsync(VehiculoDto vehiculo)
+    {
+        // No autenticado
+        if (!estaAutenticado)
+        {
+            await JSRuntime.InvokeVoidAsync(
+                "alert",
+                "⚠️ Debes iniciar sesión para solicitar una renta."
+            );
+            // Opcional: redirigir al login
+            Nav.NavigateTo("/Account/Login");
+            return;
+        }
+
+        // ADMIN o USER → redirige a /rentar-vehiculo
+        if (esAdminOUser)
+        {
+            // Si quieres más adelante, se puede pasar el Id por querystring: /rentar-vehiculo?vehiculoId=...
+            Nav.NavigateTo("/rentar-vehiculo");
+            return;
+        }
+
+        // CLIENTE → NO redirige (equivalente a "#"), solo mensaje
+        if (esCliente)
+        {
+            await JSRuntime.InvokeVoidAsync(
+                "alert",
+                $"✅ Hemos recibido tu interés por el vehículo {vehiculo.Marca} {vehiculo.Modelo}.\n" +
+                "Un representante se pondrá en contacto para completar la renta."
+            );
+
+            await JSRuntime.InvokeVoidAsync(
+                "console.log",
+                $"Cliente solicitó renta del vehículo Id={vehiculo.Id}"
+            );
+
+            return;
+        }
+
+        // Cualquier otro rol raro
+        await JSRuntime.InvokeVoidAsync(
+            "alert",
+            "⚠️ Tu cuenta no tiene permisos para solicitar rentas directamente.\n" +
+            "Por favor contacta con un administrador."
+        );
+    }
+}

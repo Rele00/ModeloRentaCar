@@ -1,0 +1,191 @@
+﻿@page "/rentas-activas"
+@rendermode InteractiveServer
+
+@using RentCar.Data.Dtos
+@using RentCar.Data.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.JSInterop
+
+@attribute [Authorize(Roles = "Admin,User")]
+@inject IRentaService RentaService
+@inject NavigationManager Nav
+@inject IJSRuntime JSRuntime
+
+<div class="container">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-title">
+            <h1>Rentas activas</h1>
+            <p>Listado de vehículos actualmente rentados.</p>
+        </div>
+
+        <button class="btn-add" @onclick="IrANuevaRenta">
+            + Nueva renta
+        </button>
+    </header>
+
+    <!-- MENSAJES GLOBALES -->
+    @if (!string.IsNullOrWhiteSpace(mensaje))
+    {
+        <div class="alert @(esError ? "alert-error" : "alert-success")">
+            @mensaje
+        </div>
+    }
+
+    <!-- CONTENIDO -->
+    @if (isLoading)
+    {
+        <p>Cargando rentas...</p>
+    }
+    else if (rentasActivas.Count == 0)
+    {
+        <div class="alert alert-info">
+            No hay rentas activas en este momento.
+        </div>
+    }
+    else
+    {
+        <div class="cards-grid">
+            @foreach (var renta in rentasActivas)
+            {
+                <div class="card renta-card">
+                    <div class="card-header">
+                        <h3>@renta.VehiculoDescripcion</h3>
+                        <span class="badge">@renta.EstadoRenta</span>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Cliente:</strong> @renta.NombreCliente</p>
+                        <p><strong>Salida:</strong> @renta.FechaSalida.ToShortDateString()</p>
+                        <p><strong>Estimada devolución:</strong> @renta.FechaEstimadaDevolucion.ToShortDateString()</p>
+                        <p><strong>Monto estimado:</strong> @renta.MontoEstimado.ToString("C2")</p>
+
+                        <p class="@GetClaseVencimiento(renta)">
+                            <strong>Estado de tiempo:</strong> @GetTextoVencimiento(renta)
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn-primary"
+                                @onclick="() => ConfirmarDevolucionAsync(renta)">
+                            Devolver vehículo
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<RentaResumenDto> rentasActivas = new();
+    private bool isLoading = true;
+    private string? mensaje;
+    private bool esError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarRentasAsync();
+    }
+
+    private async Task CargarRentasAsync()
+    {
+        isLoading = true;
+        esError = false;
+        mensaje = null;
+
+        try
+        {
+            var lista = await RentaService.GetRentasActivasAsync();
+            rentasActivas = lista.ToList();
+
+            if (rentasActivas.Count == 0)
+            {
+                mensaje = "No hay rentas activas por el momento.";
+                esError = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            esError = true;
+            mensaje = "Ocurrió un error al cargar las rentas activas.";
+            // Retroalimentación inmediata con JSInterop
+            await JSRuntime.InvokeVoidAsync("alert", $"⚠️ Error al cargar rentas: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void IrANuevaRenta()
+    {
+        Nav.NavigateTo("/rentar-vehiculo");
+    }
+
+    // Confirmación con JSInterop antes de navegar a la devolución
+    private async Task ConfirmarDevolucionAsync(RentaResumenDto renta)
+    {
+        var mensajeConfirmacion =
+            $"¿Desea registrar la devolución del vehículo:\n" +
+            $"• {renta.VehiculoDescripcion}\n" +
+            $"al cliente {renta.NombreCliente}?";
+
+        var confirmar = await JSRuntime.InvokeAsync<bool>("confirm", mensajeConfirmacion);
+
+        if (confirmar)
+        {
+            Nav.NavigateTo($"/devolver-renta/{renta.Id}");
+        }
+        else
+        {
+            // Feedback opcional: usuario canceló
+            await JSRuntime.InvokeVoidAsync("console.log", "Devolución cancelada por el usuario.");
+        }
+    }
+
+    // ===== Lógica de estado de tiempo de la renta =====
+
+    private string GetTextoVencimiento(RentaResumenDto renta)
+    {
+        var hoy = DateTime.Today;
+        var dias = (renta.FechaEstimadaDevolucion.Date - hoy).Days;
+
+        if (dias < 0)
+        {
+            var atrasados = Math.Abs(dias);
+            return atrasados == 1
+                ? "Vencida hace 1 día"
+                : $"Vencida hace {atrasados} días";
+        }
+
+        if (dias == 0)
+        {
+            return "Vence hoy";
+        }
+
+        if (dias == 1)
+        {
+            return "Vence en 1 día";
+        }
+
+        return $"Vence en {dias} días";
+    }
+
+    private string GetClaseVencimiento(RentaResumenDto renta)
+    {
+        var hoy = DateTime.Today;
+        var dias = (renta.FechaEstimadaDevolucion.Date - hoy).Days;
+
+        if (dias < 0)
+        {
+            return "text-danger";   // muy atrasado
+        }
+
+        if (dias == 0)
+        {
+            return "text-warning";  // vence hoy
+        }
+
+        return "text-muted";       // aún dentro del plazo
+    }
+}

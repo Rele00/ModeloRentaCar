@@ -1,0 +1,479 @@
+:root {
+    /* Fondo principal oscuro */
+    --color-bg-main: #020617;
+    --color-bg-alt: #000000;
+    /* Antes era radial, ahora un degradado lineal simple oscuro */
+    --color-hero-gradient: linear-gradient(to bottom, #020617 0%, #000000 100%);
+    /* Acentos en naranja */
+    --color-accent-1: #ff9900;
+    --color-accent-2: #ff9900;
+    /* Superficies y texto */
+    --color-surface-light: rgba(15, 23, 42, 0.96); /* tarjetas oscuras */
+    --color-surface: rgba(15, 23, 42, 0.9);
+    --color-white: #ffffff;
+    --color-text-main: #e5e7eb;
+    --color-text-muted: #9ca3af;
+    /* Valores de glow (no se usan ya en radiales, pero los dejo por si quieres efectos luego) */
+    --glow-1: rgba(56, 189, 248, 0.22);
+    --glow-2: rgba(37, 99, 235, 0.18);
+}
+
+/* Reset y base */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    /* Fuente base */
+    font-family: 'Albert Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow-x: hidden;
+    color: var(--color-text-main);
+    /* Fondo oscuro sin radial */
+    background: var(--color-hero-gradient);
+    background-attachment: fixed;
+}
+
+/* ====== PLACEHOLDERS GLOBALES (incluye InputText de Blazor) ====== */
+
+input::placeholder,
+textarea::placeholder,
+select::placeholder,
+input.form-control::placeholder,
+textarea.form-control::placeholder,
+.login-input::placeholder {
+    color: #020617 !important; /* negro/azul oscuro bien visible */
+    opacity: 1 !important; /* algunos navegadores bajan la opacidad por defecto */
+}
+
+/*Selector de Labels*/
+.form-label {
+    color: black;
+}
+/* Contenedor general de la app (MainLayout) */
+.app-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Contenido principal, con un pequeño margen respecto al layout */
+.app-main {
+    flex: 1;
+    padding: 1.5rem 1.5rem 2.5rem;
+    background: transparent;
+}
+
+/* El Home puede seguir sin padding extra si lo deseas */
+.app-content-home {
+    padding: 0;
+}
+
+/* ================= HERO ================= */
+
+.hero {
+    min-height: 70vh;
+    height: 100vh;
+    /* Usa el mismo fondo oscuro que el body (ya no radial) */
+    background: var(--color-hero-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* (Puedes reutilizar float más adelante si quieres otros efectos) */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+
+    50% {
+        transform: translateY(-30px) scale(1.08);
+    }
+}
+
+.hero-content {
+    text-align: center;
+    color: var(--color-white);
+    z-index: 2;
+    max-width: 900px;
+    padding: 0 2rem;
+}
+
+.hero h1 {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+    animation: fadeInUp 1s ease;
+}
+
+    .hero h1 span {
+        background: linear-gradient(45deg, var(--color-accent-1), var(--color-accent-2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+.hero p {
+    font-size: 1.4rem;
+    margin-bottom: 3rem;
+    opacity: 0.9;
+    animation: fadeInUp 1s ease 0.2s backwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cta-buttons {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeInUp 1s ease 0.4s backwards;
+}
+
+/* ================= BOTONES ================= */
+
+.btn {
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, var(--color-accent-1), var(--color-accent-2));
+    color: var(--color-white);
+    box-shadow: 0 10px 30px rgba(255, 153, 0, 0.35);
+}
+
+    .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(255, 153, 0, 0.5);
+    }
+
+.btn-secondary {
+    background: transparent;
+    color: #e5e7eb;
+    border: 2px solid #e5e7eb;
+}
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+        color: var(--color-bg-main);
+        transform: translateY(-3px);
+    }
+
+/* ================= FEATURES ================= */
+
+.features {
+    padding: 6rem 5%;
+    /* Fondo transparente para que se vea el fondo oscuro general */
+    background: transparent;
+    color: var(--color-text-main);
+}
+
+    .features h2 {
+        text-align: center;
+        font-size: 3rem;
+        margin-bottom: 4rem;
+        color: #e5e7eb;
+        font-weight: 700;
+    }
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background: var(--color-surface-light);
+    padding: 2.25rem;
+    border-radius: 20px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+    transition: all 0.25s ease;
+    text-align: center;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    backdrop-filter: blur(8px);
+}
+
+    .feature-card:hover {
+        transform: translateY(-8px) scale(1.01);
+        box-shadow: 0 22px 60px rgba(15, 23, 42, 0.9);
+        border-color: rgba(255, 153, 0, 0.6);
+    }
+
+.feature-icon {
+    width: 72px;
+    height: 72px;
+    /* Antes radial, ahora un degradado lineal naranja */
+    background: linear-gradient(135deg, var(--color-accent-2), var(--color-accent-1));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: var(--color-white);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.9);
+}
+
+.feature-card h3 {
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+    color: #f9fafb;
+}
+
+.feature-card p {
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    font-size: 0.98rem;
+}
+
+/* ================= STATS ================= */
+
+.stats {
+    /* Antes radial, ahora un degradado lineal vertical oscuro */
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.6) 100%);
+    padding: 5rem 5%;
+    color: #f9fafb;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.stat-item {
+    padding: 1.5rem 1rem;
+}
+
+    .stat-item h3 {
+        font-size: 3.1rem;
+        font-weight: 800;
+        background: linear-gradient(45deg, var(--color-accent-1), var(--color-accent-2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-item p {
+        font-size: 1.05rem;
+        opacity: 0.9;
+        color: #e5e7eb;
+    }
+
+/* ================= UTILIDADES GENERALES ================= */
+
+.card-dark {
+    background: var(--color-surface);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    backdrop-filter: blur(6px);
+}
+
+.text-muted {
+    color: var(--color-text-muted);
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 1024px) {
+    .hero h1 {
+        font-size: 3rem;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        padding: 3rem 1.5rem;
+        height: auto;
+    }
+
+        .hero h1 {
+            font-size: 2.5rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+        }
+
+    .cta-buttons {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .features {
+        padding-inline: 1.5rem;
+        padding-top: 4rem;
+        padding-bottom: 4rem;
+    }
+
+        .features h2 {
+            font-size: 2rem;
+            margin-bottom: 2.5rem;
+        }
+
+    .stats {
+        padding-inline: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-content {
+        padding: 0 1.25rem;
+    }
+
+    .btn {
+        width: 100%;
+    }
+}
+/* Orientación y márgenes al imprimir */
+@page {
+    size: landscape; /* Horizontal para que entren todas las columnas */
+    margin: 10mm;
+}
+
+/* Estilos solo para impresión */
+@media print {
+
+    /* Quitar fondos y sombras que desperdician espacio */
+    body {
+        background: #ffffff !important;
+    }
+
+    .clientes-page {
+        margin: 0;
+        padding: 0;
+    }
+
+        .clientes-page .card {
+            box-shadow: none !important;
+            border: 1px solid #00000022;
+            border-radius: 0;
+        }
+
+    /* Asegurar que la zona de la tabla use todo el ancho */
+    .clientes-lista-wrapper,
+    .clientes-lista-wrapper .card,
+    .clientes-lista-wrapper .card-body,
+    .clientes-lista-wrapper table {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Evitar que .table-responsive recorte el contenido en la impresión */
+    .clientes-table-wrapper {
+        overflow: visible !important;
+    }
+
+    /* Opcional: hacer la letra un poco más pequeña para que quepan todas las columnas */
+    .clientes-lista-wrapper table {
+        font-size: 0.8rem;
+    }
+
+    /* Ya tienes d-print-none y d-print-block, reforzamos por si acaso */
+    .d-print-none {
+        display: none !important;
+    }
+
+    .d-print-block {
+        display: block !important;
+    }
+
+    /* Quitar márgenes grandes arriba/abajo si hiciera falta */
+    h1.d-print-block {
+        margin-top: 0;
+    }
+}
+
+/* ============================
+   Date / Time pickers en blanco
+   ============================ */
+
+.container input[type="date"],
+.container input[type="time"],
+.container input[type="datetime-local"],
+.container input[type="month"] {
+    background-color: #020617; /* fondo oscuro para que contraste */
+    color: #ffffff; /* texto blanco */
+    border: 1px solid #1f2937;
+    border-radius: 0.75rem;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.95rem;
+}
+
+    /* Placeholders dentro del date/time (cuando el navegador los usa) */
+    .container input[type="date"]::placeholder,
+    .container input[type="time"]::placeholder,
+    .container input[type="datetime-local"]::placeholder,
+    .container input[type="month"]::placeholder {
+        color: #ffffff;
+        opacity: 0.8;
+    }
+
+    /* Para que el contenido editable del date/time también sea blanco (WebKit: Chrome, Edge, etc.) */
+    .container input[type="date"]::-webkit-datetime-edit,
+    .container input[type="time"]::-webkit-datetime-edit,
+    .container input[type="datetime-local"]::-webkit-datetime-edit,
+    .container input[type="month"]::-webkit-datetime-edit {
+        color: #ffffff;
+    }
+
+    /* Icono del calendario / reloj en blanco (lo invertimos) */
+    .container input[type="date"]::-webkit-calendar-picker-indicator,
+    .container input[type="time"]::-webkit-calendar-picker-indicator,
+    .container input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+    .container input[type="month"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
+
+    /* Efecto focus coherente con tu tema */
+    .container input[type="date"]:focus,
+    .container input[type="time"]:focus,
+    .container input[type="datetime-local"]:focus,
+    .container input[type="month"]:focus {
+        outline: none;
+        border-color: #f97316;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.4);
+    }

@@ -1,0 +1,409 @@
+﻿/* ============================
+   Gestión de Clientes - Tema oscuro naranja
+   ============================ */
+
+/* Wrapper general */
+.clientes-page {
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-bottom: 2rem;
+    color: #e5e7eb;
+}
+
+    /* ----------------------------
+   ENCABEZADO PRINCIPAL
+   ---------------------------- */
+
+    .clientes-page h2 {
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: #ffffff;
+        margin-bottom: 0.15rem;
+    }
+
+    .clientes-page small.text-muted {
+        color: #ffffff;
+        opacity: 0.85;
+        font-size: 0.85rem;
+    }
+
+    /* Botón AGREGAR (naranja) */
+    .clientes-page .btn-group .btn.btn-success {
+        background: linear-gradient(135deg, #ff9900, #ffb84d);
+        border: none;
+        color: #111827;
+        font-weight: 600;
+        border-radius: 999px;
+        box-shadow: 0 10px 20px rgba(255, 153, 0, 0.45);
+        transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+    }
+
+        .clientes-page .btn-group .btn.btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(255, 153, 0, 0.7);
+            opacity: 0.97;
+        }
+
+    /* Botón RECARGAR (verde) */
+    .clientes-page .btn-group .btn.btn-outline-secondary {
+        border-radius: 999px;
+        border-color: #22c55e;
+        color: #022c22;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        font-weight: 500;
+        box-shadow: 0 10px 20px rgba(22, 163, 74, 0.45);
+    }
+
+        .clientes-page .btn-group .btn.btn-outline-secondary:hover {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            border-color: #16a34a;
+        }
+
+    /* ----------------------------
+   CARDS GENERALES
+   ---------------------------- */
+
+    .clientes-page .card {
+        border-radius: 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        background: radial-gradient(circle at top left, #111827 0, #020617 55%, #000000 100%);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9);
+        overflow: hidden;
+    }
+
+    /* Encabezados de card */
+    .clientes-page .card-header {
+        background: linear-gradient(135deg, #020617, #111827);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.55);
+        color: #ffffff;
+    }
+
+        .clientes-page .card-header h5 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        /* Botón "Cancelar" en header del formulario */
+        .clientes-page .card-header .btn.btn-sm.btn-outline-secondary {
+            border-radius: 999px;
+            border-color: #f97316;
+            color: #f97316;
+            background-color: transparent;
+            font-size: 0.8rem;
+            padding-inline: 0.8rem;
+        }
+
+            .clientes-page .card-header .btn.btn-sm.btn-outline-secondary:hover {
+                background-color: #f97316;
+                color: #111827;
+            }
+
+    /* Body de cards */
+    .clientes-page .card-body {
+        background: transparent;
+        color: #e5e7eb;
+    }
+
+        /* ----------------------------
+   FORMULARIO DE CLIENTE
+   ---------------------------- */
+
+        .clientes-page .card-body .form-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #ffffff;
+        }
+
+        /* Inputs del formulario */
+        .clientes-page .card-body .form-control {
+            border-radius: 0.75rem;
+            border: 1px solid #1f2937;
+            background-color: #020617;
+            color: #ffffff;
+            font-size: 0.95rem;
+            padding: 0.55rem 0.8rem;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease, background-color 0.15s ease;
+        }
+
+            /* Placeholders del formulario (inputs del EditForm) */
+            .clientes-page .card-body .form-control::placeholder {
+                color: #ffffff; /* <-- AQUÍ se ponen BLANCOS los placeholders del FORMULARIO */
+                opacity: 1;
+            }
+
+            /* Focus vibrante */
+            .clientes-page .card-body .form-control:focus {
+                border-color: #ff9900;
+                box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.4);
+                background-color: #020617;
+                transform: translateY(-1px);
+            }
+
+    /* Checkbox "cliente activo" */
+    .clientes-page .form-check-input {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 0.3rem;
+        border: 1px solid #38bdf8;
+        background-color: #020617;
+    }
+
+        .clientes-page .form-check-input:checked {
+            background-color: #22c55e;
+            border-color: #22c55e;
+        }
+
+    .clientes-page .form-check-label {
+        color: #ffffff;
+        font-size: 0.9rem;
+    }
+
+    /* Mensajes de validación */
+    .clientes-page .text-danger,
+    .clientes-page .text-danger.small {
+        font-size: 0.8rem;
+        color: #fecaca !important;
+    }
+
+    /* Botones del formulario */
+    .clientes-page .card-body input.btn.btn-success {
+        background: linear-gradient(135deg, #ff9900, #ffb84d);
+        border: none;
+        color: #111827;
+        font-weight: 600;
+        border-radius: 999px;
+        padding-inline: 1.4rem;
+        box-shadow: 0 10px 22px rgba(255, 153, 0, 0.5);
+    }
+    /*Boton de cancelar*/
+#btnCancelar {
+    background-color: red;
+    
+}
+       
+        .clientes-page .card-body input.btn.btn-success:hover {
+            box-shadow: 0 14px 30px rgba(255, 153, 0, 0.75);
+            transform: translateY(-1px);
+        }
+
+    .clientes-page .card-body input.btn.btn-outline-secondary {
+        border-radius: 999px;
+        border-color: #38bdf8;
+        color: #e5e7eb;
+        background-color: #020617;
+    }
+
+        .clientes-page .card-body input.btn.btn-outline-secondary:hover {
+            background: linear-gradient(135deg, #0f172a, #020617);
+        }
+
+    /* ----------------------------
+   ZONA DE FILTROS / BÚSQUEDA
+   ---------------------------- */
+
+    .clientes-page .card-body .input-group-text#lblBusqueda {
+        border-radius: 999px 0 0 999px;
+        border: none;
+        background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+        color: #0f172a;
+        font-weight: 600;
+    }
+
+    .clientes-page #txtboxConsultar {
+        border-radius: 0;
+        border: none;
+        background-color: #020617;
+        color: #ffffff;
+    }
+
+        /* Placeholder del input de búsqueda rápida */
+        .clientes-page #txtboxConsultar::placeholder {
+            color: #ffffff !important; /* <-- AQUÍ se ponen BLANCOS los placeholders de BÚSQUEDA */
+            opacity: 1;
+        }
+
+        /* extra por compatibilidad */
+        .clientes-page #txtboxConsultar::-webkit-input-placeholder {
+            color: #ffffff !important; /* mismo blanco en WebKit */
+        }
+
+        .clientes-page #txtboxConsultar:-ms-input-placeholder {
+            color: #ffffff !important; /* mismo blanco en IE/Edge antiguo */
+        }
+
+        .clientes-page #txtboxConsultar::-ms-input-placeholder {
+            color: #ffffff !important; /* mismo blanco en IE/Edge antiguo */
+        }
+
+        .clientes-page #txtboxConsultar:focus {
+            box-shadow: none;
+        }
+
+    /* Botón Buscar (naranja) */
+    .clientes-page #btnBuscar {
+        border-radius: 0 999px 999px 0;
+        border: none;
+        background: linear-gradient(135deg, #ff9900, #ffb84d);
+        color: #111827;
+        font-weight: 600;
+        box-shadow: 0 10px 20px rgba(255, 153, 0, 0.45);
+    }
+
+        .clientes-page #btnBuscar:hover {
+            box-shadow: 0 14px 26px rgba(255, 153, 0, 0.7);
+        }
+
+    /* Checkbox "Solo activos" */
+    .clientes-page .form-check-input#flexCheckDefault {
+        margin-top: 0.15rem;
+    }
+
+    .clientes-page .form-check-label[for="flexCheckDefault"] {
+        color: #ffffff;
+        font-size: 0.9rem;
+    }
+
+    /* Botón IMPRIMIR (azul) usando el contenedor real col-12 col-lg-2 d-flex */
+    .clientes-page .col-12.col-lg-2.d-flex.justify-content-lg-end .btn.btn-outline-secondary {
+        border-radius: 999px;
+        border-color: #0ea5e9; /* <-- borde azul del botón IMPRIMIR */
+        color: #0ea5e9; /* <-- texto azul del botón IMPRIMIR */
+        background-color: transparent;
+        font-weight: 600;
+    }
+
+        .clientes-page .col-12.col-lg-2.d-flex.justify-content-lg-end .btn.btn-outline-secondary:hover {
+            background: linear-gradient(135deg, #0ea5e9, #38bdf8); /* <-- fondo azul al pasar el mouse */
+            color: #0f172a;
+        }
+
+/* ----------------------------
+   TABLA DE CLIENTES
+   ---------------------------- */
+
+.clientes-lista-wrapper .card {
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    background: radial-gradient(circle at top left, #020617 0, #000000 70%);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.95);
+}
+
+.clientes-lista-wrapper .card-body {
+    padding: 0;
+}
+
+/* Encabezado de tabla (fondo claro + texto negro) */
+.clientes-lista-wrapper .table thead.table-light {
+    background: linear-gradient(135deg, #f9fafb, #e5e7eb);
+    color: #000000;
+}
+
+.clientes-lista-wrapper .table thead th {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #000000; /* <-- texto negro encabezados tabla */
+    white-space: nowrap;
+}
+
+/* Filas */
+.clientes-lista-wrapper .table tbody tr {
+    background-color: #020617;
+    transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+}
+
+    .clientes-lista-wrapper .table tbody tr:nth-child(even),
+    .clientes-lista-wrapper .table tbody tr:nth-child(odd) {
+        background-color: #020617;
+    }
+
+    .clientes-lista-wrapper .table tbody tr:hover {
+        background-color: #020617;
+        box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.4);
+        transform: translateY(-1px);
+    }
+
+/* Celdas */
+.clientes-lista-wrapper .table tbody td,
+.clientes-lista-wrapper .table tbody th {
+    color: #ffffff;
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+    /* Links dentro de la tabla */
+    .clientes-lista-wrapper .table tbody td a {
+        color: #ffffff;
+        text-decoration: underline;
+    }
+
+/* Botones Editar / Eliminar */
+.clientes-lista-wrapper .btn-group.btn-group-sm .btn {
+    border-radius: 999px !important;
+    padding-inline: 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: none;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.9);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+}
+
+/* Editar (cyan) */
+.clientes-lista-wrapper .btn-group .btn.btn-warning {
+    background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    color: #0f172a;
+}
+
+/* Eliminar (rojo) */
+.clientes-lista-wrapper .btn-group .btn.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #b91c1c);
+    color: #f9fafb;
+}
+
+.clientes-lista-wrapper .btn-group .btn:hover {
+    transform: translateY(-1px);
+    opacity: 0.96;
+}
+
+/* Alert sin resultados */
+.clientes-page .alert.alert-info {
+    background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+    border-color: #93c5fd;
+    color: #1e3a8a;
+    border-radius: 0.9rem;
+}
+
+/* ----------------------------
+   MODO IMPRESIÓN
+   ---------------------------- */
+
+@media print {
+    .clientes-page {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+        .clientes-page .card,
+        .clientes-page .card-header {
+            background: #ffffff !important;
+            border-color: #000 !important;
+            box-shadow: none;
+        }
+
+    .clientes-lista-wrapper .table thead.table-light {
+        background: #111827 !important;
+        color: #ffffff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .clientes-lista-wrapper .table tbody tr,
+    .clientes-lista-wrapper .table tbody td {
+        color: #000000 !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+    }
+}

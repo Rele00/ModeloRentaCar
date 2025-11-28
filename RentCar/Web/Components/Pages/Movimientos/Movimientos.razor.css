@@ -1,0 +1,335 @@
+﻿/* ============================
+   HISTORIAL DE MOVIMIENTOS
+   ============================ */
+
+/* Contenedor principal */
+.movimientos-page {
+    max-width: 1280px;
+    margin: 2.5rem auto;
+    padding: 0 1.5rem 2.5rem;
+    color: #e5e7eb;
+}
+
+/* ----------------------------
+   HEADER
+   ---------------------------- */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.header-title h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f9fafb;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.25rem;
+}
+
+.header-title p {
+    color: #9ca3af;
+    font-size: 0.95rem;
+}
+
+/* ----------------------------
+   MENSAJES GLOBALES
+   ---------------------------- */
+
+.alert {
+    margin-bottom: 1.25rem;
+    border-radius: 0.9rem;
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+}
+
+.alert-success {
+    background-color: rgba(22, 163, 74, 0.15);
+    border: 1px solid #22c55e;
+    color: #bbf7d0;
+}
+
+.alert-error {
+    background-color: rgba(185, 28, 28, 0.2);
+    border: 1px solid #ef4444;
+    color: #fecaca;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+    border-color: #93c5fd;
+    color: #1e3a8a;
+}
+
+/* ----------------------------
+   CONTENEDOR PRINCIPAL
+   ---------------------------- */
+
+.main-container {
+    background-color: #020617;
+    border-radius: 18px;
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    padding: 1.75rem 1.5rem 1.5rem;
+}
+
+/* Encabezado dentro de la tarjeta (título + filtros) */
+.main-container-header {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+}
+
+    .main-container-header h2 {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #f9fafb;
+    }
+
+    .main-container-header p {
+        color: #9ca3af;
+        margin-top: 0.25rem;
+        font-size: 0.95rem;
+    }
+
+/* ----------------------------
+   FILTROS SUPERIORES
+   ---------------------------- */
+
+.header-actions.movimientos-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+/* Input / select de filtros */
+.search-input {
+    flex: 1;
+    min-width: 180px;
+    padding: 0.55rem 0.9rem;
+    border-radius: 9999px;
+    border: 1px solid #1f2937;
+    background-color: #020617;
+    color: #e5e7eb;
+    font-size: 0.9rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, transform 0.08s ease;
+}
+
+    .search-input::placeholder {
+        color: #9ca3af;
+        opacity: 1;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #f97316;
+        background-color: #020617;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.4);
+        transform: translateY(-1px);
+    }
+
+/* Botón "Limpiar filtros" */
+.search-button {
+    padding: 0.55rem 1.2rem;
+    border-radius: 9999px;
+    border: none;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    background: linear-gradient(135deg, #4b5563, #6b7280);
+    color: #f9fafb;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.85);
+    white-space: nowrap;
+    transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, opacity 0.12s ease;
+}
+
+    .search-button:hover {
+        transform: translateY(-1px);
+        opacity: 0.96;
+        box-shadow: 0 14px 28px rgba(15, 23, 42, 0.95);
+    }
+
+    .search-button:active {
+        transform: translateY(0);
+        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.8);
+    }
+
+/* Resumen de movimientos filtrados */
+.resumen-movimientos {
+    margin-top: 0.75rem;
+}
+
+    .resumen-movimientos small {
+        color: #9ca3af;
+        font-size: 0.85rem;
+    }
+
+/* ----------------------------
+   LISTA / TABLA
+   ---------------------------- */
+
+.movimientos-list {
+    margin-top: 1.25rem;
+}
+
+    /* Texto de carga */
+    .movimientos-list > p {
+        color: #9ca3af;
+        font-style: italic;
+    }
+
+/* Estado vacío */
+.empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: #e5e7eb;
+}
+
+    .empty-state svg {
+        width: 72px;
+        height: 72px;
+        margin-bottom: 1rem;
+        color: #4b5563;
+    }
+
+    .empty-state h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.4rem;
+    }
+
+    .empty-state p {
+        font-size: 0.9rem;
+        color: #9ca3af;
+    }
+
+/* Contenedor de tabla */
+.table-wrapper {
+    margin-top: 0.75rem;
+    border-radius: 1rem;
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95);
+    background: radial-gradient(circle at top left, #020617 0, #000000 70%);
+}
+
+/* Tabla base */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+    /* Encabezado de tabla */
+    .data-table thead {
+        background: linear-gradient(135deg, #f9fafb, #e5e7eb);
+    }
+
+        .data-table thead th {
+            padding: 0.75rem 0.9rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #000000;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.55);
+            white-space: nowrap;
+        }
+
+    /* Cuerpo de tabla */
+    .data-table tbody tr {
+        background-color: #020617;
+        transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+    }
+
+        .data-table tbody tr:nth-child(even),
+        .data-table tbody tr:nth-child(odd) {
+            background-color: #020617;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #020617;
+            box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.4);
+            transform: translateY(-1px);
+        }
+
+    .data-table tbody td {
+        padding: 0.65rem 0.9rem;
+        border-bottom: 1px solid rgba(31, 41, 55, 0.85);
+        color: #e5e7eb;
+        vertical-align: top;
+    }
+
+        /* Columna monto – que resalte un poco más */
+        .data-table tbody td:nth-child(5) {
+            font-weight: 600;
+            color: #bbf7d0;
+        }
+
+/* Badge de tipo de movimiento */
+.badge-tipo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.15rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+    color: #0b1120;
+    box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.7), 0 0 12px rgba(56, 189, 248, 0.6);
+}
+
+/* ----------------------------
+   RESPONSIVE
+   ---------------------------- */
+
+@media (max-width: 900px) {
+    .header-actions.movimientos-filtros {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-input {
+        width: 100%;
+    }
+
+    .search-button {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+    }
+}
+
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 640px) {
+    .movimientos-page {
+        padding-inline: 1rem;
+    }
+
+    .main-container {
+        padding-inline: 1rem;
+    }
+
+    .data-table thead {
+        font-size: 0.75rem;
+    }
+
+    .data-table tbody td {
+        font-size: 0.85rem;
+    }
+}

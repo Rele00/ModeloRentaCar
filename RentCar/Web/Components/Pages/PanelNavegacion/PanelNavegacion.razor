@@ -1,0 +1,180 @@
+﻿@page "/panel-navegacion"
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles = "Admin,User")]
+
+<div class="cards-shell">
+    <header class="cards-header">
+        <h1>Panel de accesos rápidos</h1>
+        <p>
+            Panel interno para usuarios del sistema RentCar (Admin / User).
+            Accede rápidamente a las secciones más utilizadas.
+        </p>
+    </header>
+
+    <section class="card-grid">
+
+        <!-- RENTAS: OPERACIÓN DIARIA -->
+        <NavLink href="/rentar-vehiculo" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">📝</span>
+                <h2 class="card-title">Registrar renta</h2>
+                <p class="card-desc">
+                    Crear una nueva renta para un cliente y generar la factura inicial.
+                </p>
+                <span class="card-tag">Admin / User</span>
+            </article>
+        </NavLink>
+
+        <NavLink href="/rentas-activas" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">📂</span>
+                <h2 class="card-title">Rentas activas</h2>
+                <p class="card-desc">
+                    Consulta y gestiona las rentas en curso, con opción de devolución.
+                </p>
+                <span class="card-tag">Admin / User</span>
+            </article>
+        </NavLink>
+
+        <NavLink href="/movimientos" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">📅</span>
+                <h2 class="card-title">Movimientos</h2>
+                <p class="card-desc">
+                    Historial de movimientos: rentas, devoluciones, pagos y ajustes.
+                </p>
+                <span class="card-tag">Admin / User</span>
+            </article>
+        </NavLink>
+
+        <!-- VEHÍCULOS -->
+        <NavLink href="/lista-vehiculos" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">🚗</span>
+                <h2 class="card-title">Gestión de vehículos</h2>
+                <p class="card-desc">
+                    Alta, edición, activación y desactivación del catálogo de vehículos.
+                </p>
+                <span class="card-tag">Admin / User</span>
+            </article>
+        </NavLink>
+
+        <NavLink href="/ver-vehiculos" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">🧭</span>
+                <h2 class="card-title">Vehículos (vista clientes)</h2>
+                <p class="card-desc">
+                    Galería para ver cómo se muestra la flota disponible a los clientes.
+                </p>
+                <span class="card-tag">Admin / User</span>
+            </article>
+        </NavLink>
+
+        <!-- CLIENTES -->
+        <NavLink href="/gestion-clientes" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">👥</span>
+                <h2 class="card-title">Gestión de clientes</h2>
+                <p class="card-desc">
+                    Registro, edición y seguimiento de la información de clientes.
+                </p>
+                <span class="card-tag">Admin / User</span>
+            </article>
+        </NavLink>
+
+        <!-- DASHBOARD & CATEGORÍAS -->
+        <NavLink href="/Dashboard" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">📊</span>
+                <h2 class="card-title">Dashboard</h2>
+                <p class="card-desc">
+                    Resumen de métricas, estado de la flota y actividad reciente.
+                </p>
+                <span class="card-tag card-tag-admin">Solo Admin</span>
+            </article>
+        </NavLink>
+
+        <NavLink href="/categoria" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">🏷️</span>
+                <h2 class="card-title">Categorías de vehículos</h2>
+                <p class="card-desc">
+                    Organiza los vehículos por tipo, tamaño o segmento de renta.
+                </p>
+                <span class="card-tag card-tag-admin">Solo Admin</span>
+            </article>
+        </NavLink>
+
+        <!-- PERFIL / CUENTA -->
+        <NavLink href="/Account/Manage" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">🧑‍💻</span>
+                <h2 class="card-title">Perfil de usuario</h2>
+                <p class="card-desc">
+                    Actualiza tus datos, contraseña y opciones de seguridad de la cuenta.
+                </p>
+                <span class="card-tag">Admin / User</span>
+            </article>
+        </NavLink>
+
+        <!-- PÁGINAS PÚBLICAS (ACCESO PARA PRUEBA / REVISIÓN) -->
+        <NavLink href="/" class="card-link" Match="NavLinkMatch.All">
+            <article class="feature-card">
+                <span class="card-icon">🏠</span>
+                <h2 class="card-title">Inicio (landing)</h2>
+                <p class="card-desc">
+                    Página de inicio pública del sitio, con hero y presentación del servicio.
+                </p>
+                <span class="card-tag">Visible al público</span>
+            </article>
+        </NavLink>
+
+        <NavLink href="/contactos" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">📞</span>
+                <h2 class="card-title">Contactos</h2>
+                <p class="card-desc">
+                    Información de contacto y enlaces a redes sociales y canales de soporte.
+                </p>
+                <span class="card-tag">Visible al público</span>
+            </article>
+        </NavLink>
+
+        <NavLink href="/conocenos" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">💬</span>
+                <h2 class="card-title">Conócenos</h2>
+                <p class="card-desc">
+                    Detalles de la empresa, misión, visión y valores institucionales.
+                </p>
+                <span class="card-tag">Visible al público</span>
+            </article>
+        </NavLink>
+
+        <!-- MÓDULOS AVANZADOS / FUTUROS -->
+        <NavLink href="#reportes" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">📑</span>
+                <h2 class="card-title">Reportes</h2>
+                <p class="card-desc">
+                    Reportes de alquileres, ingresos y uso de la flota (módulo en desarrollo).
+                </p>
+                <span class="card-tag card-tag-admin">Solo Admin · Próximamente</span>
+            </article>
+        </NavLink>
+
+        <NavLink href="#configuracion" class="card-link">
+            <article class="feature-card">
+                <span class="card-icon">⚙️</span>
+                <h2 class="card-title">Configuración</h2>
+                <p class="card-desc">
+                    Ajustes generales del sistema y parámetros avanzados (módulo en desarrollo).
+                </p>
+                <span class="card-tag card-tag-admin">Solo Admin · Próximamente</span>
+            </article>
+        </NavLink>
+
+    </section>
+</div>

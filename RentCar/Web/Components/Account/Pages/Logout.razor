@@ -1,0 +1,21 @@
+﻿@page "/Account/Logout"
+
+@using Microsoft.AspNetCore.Identity
+@using RentCar.Data.Context
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager NavigationManager
+
+<h3>Cerrando sesión...</h3>
+<p>Por favor espera un momento.</p>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Cerrar sesión del usuario
+        await SignInManager.SignOutAsync();
+
+        // Redirigir a la página de inicio (o donde quieras)
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+}

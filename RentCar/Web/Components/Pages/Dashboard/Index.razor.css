@@ -1,0 +1,376 @@
+﻿/* ==========================
+   CONTENEDOR DEL DASHBOARD
+   ========================== */
+
+.dashboard-root {
+    padding: 1.5rem 0 2.5rem;
+    color: var(--color-text-main);
+}
+
+    /* Un poco de aire entre filas */
+    .dashboard-root .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+/* ==========================
+   CARDS BASE
+   ========================== */
+
+.card {
+    border-radius: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.38);
+    background: radial-gradient(circle at top left, #111827 0%, #020617 70%);
+    color: #e5e7eb;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9);
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.98);
+        border-color: rgba(255, 153, 0, 0.7);
+    }
+
+/* Cabeceras de card con emoji (sobrescribimos el bg-white de Bootstrap) */
+.header-with-emoji {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: 0.9rem 1.25rem;
+    background: rgba(15, 23, 42, 0.96) !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.45);
+    color: #e5e7eb;
+}
+
+    /* Título dentro de la cabecera */
+    .header-with-emoji h5 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+/* Botón pequeñito tipo pill (Ver todo / Gestionar) */
+.btn-emoji {
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    padding-inline: 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #020617, #020617);
+    color: #e5e7eb;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+    .btn-emoji:hover {
+        background: #020617;
+        border-color: rgba(255, 153, 0, 0.85);
+        color: #ffb84d;
+    }
+
+/* ==========================
+   CARDS DE ESTADÍSTICAS
+   ========================== */
+
+.stat-card {
+    border-radius: 1rem;
+    padding: 1rem;
+    background: radial-gradient(circle at top left, #111827 0%, #020617 70%);
+    border: 1px solid rgba(148, 163, 184, 0.5);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.95);
+    color: #e5e7eb;
+}
+
+.stat-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
+    .stat-value.text-primary {
+        color: var(--color-accent-1);
+    }
+
+    .stat-value.text-danger {
+        color: #f97373;
+    }
+
+    .stat-value.text-success {
+        color: #22c55e;
+    }
+
+    .stat-value.text-info {
+        color: #38bdf8;
+    }
+
+.badge-emoji {
+    font-size: 1.25rem;
+    margin-left: 0.25rem;
+}
+
+.stat-emoji {
+    font-size: 2.1rem;
+    opacity: 0.85;
+}
+
+.small-emoji {
+    margin-right: 0.15rem;
+}
+
+/* Ajuste de <small> para que no se vea tan apagado */
+.stat-card small {
+    font-size: 0.8rem;
+}
+
+/* ==========================
+   PROGRESO – VEHÍCULOS POR ESTADO
+   ========================== */
+
+.progress-custom {
+    height: 0.9rem;
+    border-radius: 999px;
+    background-color: #020617;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9), 0 4px 12px rgba(0, 0, 0, 0.85);
+}
+
+    .progress-custom .progress-bar {
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 0.4rem;
+        color: #020617;
+    }
+
+        /* Verde disponible llamativo */
+        .progress-custom .progress-bar.bg-success {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.9), 0 0 18px rgba(34, 197, 94, 0.9);
+            color: #ecfdf5;
+        }
+
+        /* Rojo/ámbar para rentados */
+        .progress-custom .progress-bar.bg-danger {
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.9), 0 0 18px rgba(248, 113, 113, 0.9);
+            color: #fee2e2;
+        }
+
+/* ==========================
+   CANTIDAD POR CATEGORÍA
+   ========================== */
+
+.category-item {
+    font-size: 0.9rem;
+    padding-block: 0.6rem;
+    border-color: rgba(31, 41, 55, 0.85);
+    color: #e5e7eb;
+    background: transparent;
+}
+
+    .category-item:hover {
+        background: rgba(15, 23, 42, 0.9);
+    }
+
+.cat-emoji {
+    margin-right: 0.35rem;
+}
+
+.badge.bg-primary.rounded-pill {
+    background: linear-gradient(135deg, var(--color-accent-1), var(--color-accent-2));
+    color: #111827;
+    font-weight: 700;
+    box-shadow: 0 8px 18px rgba(255, 153, 0, 0.75);
+}
+
+/* ==========================
+   ACTIVIDAD RECIENTE
+   ========================== */
+
+.activity-item {
+    font-size: 0.88rem;
+    padding-block: 0.65rem;
+    border-color: rgba(31, 41, 55, 0.85);
+    background: transparent;
+    color: #e5e7eb;
+}
+
+    .activity-item:hover {
+        background: rgba(15, 23, 42, 0.9);
+    }
+
+.activity-badge {
+    border-radius: 999px;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.65rem;
+    font-weight: 600;
+}
+
+.activity-desc {
+    margin-bottom: 0.1rem;
+}
+
+/* Pequeños ajustes de color */
+.text-muted {
+    color: var(--color-text-muted) !important;
+}
+
+/* ==========================
+   VEHÍCULOS MÁS USADOS
+   ========================== */
+
+.vehicles-card {
+    margin-top: 0.5rem;
+}
+
+/* Card interna de cada vehículo */
+.vehicle-card {
+    border-radius: 1rem;
+    background: radial-gradient(circle at top left, #111827 0%, #020617 70%);
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.95);
+    overflow: hidden;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+    .vehicle-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 1);
+        border-color: rgba(255, 153, 0, 0.8);
+    }
+
+/* Contenedor de la imagen: alto fijo para que todas queden uniformes */
+.vehicle-image-wrap {
+    position: relative;
+    height: 190px;
+    background: radial-gradient(circle at top, #020617 0%, #000000 90%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem;
+}
+
+/* Imagen del vehículo: se ve COMPLETA dentro de la card */
+.vehicle-img {
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    object-fit: contain;
+    border-radius: 0.75rem;
+    background-color: #020617;
+}
+
+/* Badge de la esquina (puedes poner 🔥 en el span.small-emoji si quieres) */
+.vehicle-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+    font-size: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    background: rgba(15, 23, 42, 0.9);
+    color: #e5e7eb;
+    border: 1px solid rgba(148, 163, 184, 0.7);
+}
+
+    .vehicle-badge .small-emoji {
+        font-size: 0.9rem;
+    }
+
+/* Título y meta */
+.vehicle-title {
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #f9fafb;
+}
+
+.vehicle-meta {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--color-text-muted);
+}
+
+    .vehicle-meta li {
+        margin-bottom: 0.15rem;
+    }
+
+/* ==========================
+   BADGES DE ESTADO (DISPONIBLE / RENTADO)
+   ========================== */
+
+.status-badge {
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+    /* Disponible – VERDE NEÓN que llama la atención */
+    .status-badge.bg-success {
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+        color: #ecfdf5;
+        box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.9), 0 0 22px rgba(34, 197, 94, 0.95);
+    }
+
+    /* Otro estado (Rentado) – Rojo/ámbar */
+    .status-badge.bg-danger {
+        background: linear-gradient(135deg, #f97316, #ef4444);
+        color: #fef2f2;
+        box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.9), 0 0 22px rgba(248, 113, 113, 0.9);
+    }
+
+/* ==========================
+   LISTAS / LIST-GROUP
+   ========================== */
+
+.list-group {
+    background: transparent;
+}
+
+.list-group-item {
+    background: transparent;
+    border-color: rgba(31, 41, 55, 0.85);
+    color: #e5e7eb;
+}
+
+/* ==========================
+   RESPONSIVE
+   ========================== */
+
+@media (max-width: 992px) {
+    .stat-card {
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-root {
+        padding-top: 1rem;
+    }
+
+    .vehicles-card .card-body {
+        padding-inline: 0.75rem;
+    }
+}
