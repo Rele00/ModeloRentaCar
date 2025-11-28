@@ -1,168 +1,139 @@
-# 🚗 RentCar – Modelo de sistema de renta de vehículos
+# Documentación y estructura — **Rent Car (Blazor + EF Core + Identity)**
 
-Proyecto base para un sistema de **alquiler de vehículos** usando:
+Este documento describe la arquitectura y estructura actual del proyecto **Rent Car**, desarrollado con **Blazor Server**, **Entity Framework Core** (.NET 8) e integración de **ASP.NET Identity**. Incluye la estructura real de archivos, ejemplos de entidades, configuración de `DbContext`, servicios, y buenas prácticas.
 
-- ASP.NET Core / **Blazor Server**
-- **Entity Framework Core** (EF Core) para acceso a datos
-- **ASP.NET Core Identity** para autenticación y autorización
-- **SQL Server** como base de datos
+---
 
-Su propósito es servir como plantilla/ejemplo para construir un sistema real de renta de autos, con una arquitectura organizada por capas (datos, servicios y UI).
+## Tabla de contenidos
+1. Objetivo
+2. Estructura de archivos y carpetas actual
+3. Entidades principales (modelos)
+4. DbContext y configuración EF Core
+5. Servicios y patrón Repository
+6. Integración con Blazor Server
+7. Seguridad e Identity
+8. Migraciones y pruebas
+9. Buenas prácticas
 
-------------------------------------------------------------
-## 1. Estructura del repositorio
+---
 
-ModeloRentaCar/
-├── .gitattributes
-├── .gitignore
-├── RentCar.sln                 # Solución de Visual Studio
-└── RentCar/                    # Proyecto web principal (Blazor + EF Core + Identity)
-    ├── Program.cs              # Configuración principal de la app
-    ├── appsettings.json        # Configuración (connection strings, logging, etc.)
-    ├── Comentarios.md          # Notas/documentación técnica interna
-    ├── README.md               # Documentación del proyecto (este archivo)
-    │
-    ├── Data/                   # Capa de acceso a datos y dominio
-    │   ├── Context/
-    │   │   ├── ApplicationDbContext.cs
-    │   │   │   # DbContext principal: hereda de IdentityDbContext<ApplicationUser>
-    │   │   │   # Incluye DbSet<T> de las entidades y configuración EF Core.
-    │   │   └── ApplicationUser.cs
-    │   │       # Usuario de Identity extendido para personalizar datos de usuario.
-    │   │
-    │   ├── Models/             # Entidades del dominio (tablas de la BD)
-    │   │   ├── Vehiculo.cs     # Vehículo, con datos como marca, modelo, año, placa, etc.
-    │   │   ├── TipoVehiculo.cs # Tipo de vehículo (SUV, Sedán, etc.)
-    │   │   ├── Categoria.cs    # Categoría comercial de los vehículos.
-    │   │   ├── Cliente.cs      # Información de clientes (identificación y contacto).
-    │   │   └── Usuario.cs      # Usuarios internos (empleados del sistema).
-    │   │
-    │   └── Services/           # Lógica de negocio y acceso a datos vía servicios
-    │       ├── IVehiculoService.cs
-    │       ├── IClienteService.cs
-    │       ├── IUsuarioService.cs
-    │       ├── VehiculoService.cs
-    │       ├── ClienteService.cs
-    │       └── UsuarioService.cs
-    │       # Servicios para operaciones CRUD y consultas sobre las entidades.
-    │
-    └── Web/                    # Capa de presentación (Blazor Server)
-        └── Components/
-            ├── _Imports.razor  # Usings globales para los componentes.
-            ├── App.razor       # Componente raíz de la aplicación Blazor.
-            ├── Routes.razor    # Definición de rutas (routing de la app, si aplica).
-            │
-            ├── Layout/
-            │   └── MainLayout.razor
-            │       # Layout principal: estructura base de páginas (header, body, etc.)
-            │
-            └── Account/        # Integración con Identity en Blazor
-                ├── Shared/
-                │   └── AccountLayout.razor
-                │       # Layout específico para páginas de autenticación.
-                │
-                ├── IdentityComponentsEndpointRouteBuilderExtensions.cs
-                │   # Extensiones para mapear las páginas/componentes de Identity.
-                │
-                └── Pages/
-                    └── _Imports.razor
-                    # Imports específicos para componentes/páginas de cuenta.
+## 1. Objetivo
 
-------------------------------------------------------------
-## 2. Descripción general del proyecto
+- Modelar el dominio de un sistema de alquiler de vehículos (vehículos, clientes, usuarios, categorías).
+- Persistir datos con EF Core y SQL Server.
+- Integrar autenticación y autorización con ASP.NET Identity.
+- Consumir servicios y datos desde componentes Blazor Server.
+- Mantener una arquitectura limpia y escalable.
 
-El proyecto **RentCar** modela el dominio básico de un sistema de renta de vehículos:
+---
 
-- **Vehículos**: información de inventario (marca, modelo, año, placa, estado, tipo y categoría).
-- **Clientes**: datos de las personas que rentan los vehículos.
-- **Usuarios internos**: personal que administra el sistema (empleados, administradores).
-- **Tipos y categorías de vehículo**: permiten clasificar el inventario.
+## 2. Estructura de archivos y carpetas actual
 
-La capa de datos (`Data`) se encarga de:
+```
+RentCar/                                 // Solución principal del proyecto RentCar (backend + frontend)
+├─ Program.cs                            // Punto de entrada de la aplicación (configura servicios, middleware, etc.)
+├─ appsettings.json                      // Archivo de configuración (cadena de conexión, logging, opciones de la app)
+├─ README.md                             // Documento de explicación general del proyecto (cómo ejecutar, propósito, etc.)
+├─ Comentarios.md                        // Notas, decisiones de diseño, pendientes o documentación interna
+├─ ConsultaRentCar_ejemplo.sql           // Script SQL de ejemplo (consultas para practicar/reportes sobre la BD)
+├─ Data/                                 // Capa de acceso a datos y lógica de negocio básica
+│  ├─ Context/                           // Contexto de Entity Framework Core (mapeo a la base de datos)
+│  │  ├─ ApplicationDbContext.cs         // DbContext principal: define DbSet<>, configuración de tablas y relaciones
+│  │  └─ ApplicationUser.cs              // Clase de usuario que extiende IdentityUser (Nombre, Teléfono, etc.)
+│  ├─ Models/                            // Modelos de dominio (tablas de la base de datos)
+│  │  ├─ Vehiculo.cs                     // Entidad Vehiculo: Marca, Modelo, Placa, Año, Estado, CategoriaId, etc.
+│  │  ├─ Movimiento.cs                   // Entidad Movimiento: Vehiculo, Cliente, tipo de movimiento, fechas, etc.
+│  │  ├─ Categoria.cs                    // Entidad Categoria: nombre y descripción de la categoría de vehículos
+│  │  └─ Cliente.cs                      // Entidad Cliente: datos personales, licencia, vigencia, estado activo, etc.
+│  ├─ Dtos/                              // DTOs (Data Transfer Objects) para exponer datos al frontend o API
+│  │  ├─ MasUsadosDto.cs                 // DTO para reporte de vehículos más usados (Id, Marca, VecesUsado, etc.)
+│  │  ├─ VehiculoDto.cs                  // DTO de Vehiculo (campos necesarios para vistas/formularios)
+│  │  ├─ MovimientoDto.cs                // DTO de Movimiento (para listar y registrar movimientos)
+│  │  ├─ ClienteDto.cs                   // DTO de Cliente (para formularios y listados)
+│  │  └─ CategoriaDto.cs                 // DTO de Categoria (para combos/listados de categorías)
+│  └─ Services/                          // Servicios (lógica de negocio y acceso a datos encapsulado)
+│     ├─ IMasUsadosService.cs            // Interfaz del servicio que obtiene los vehículos más usados
+│     ├─ MasUsadosService.cs             // Implementación del servicio de vehículos más usados (consultas agrupadas, TOP N, etc.)
+│     ├─ IVehiculoService.cs             // Interfaz para operaciones con vehículos (CRUD, filtros, etc.)
+│     ├─ VehiculoService.cs              // Implementación del servicio de Vehiculos (usa ApplicationDbContext)
+│     ├─ IMovimientoService.cs           // Interfaz para operaciones con movimientos (rentas, devoluciones, etc.)
+│     ├─ MovimientoService.cs            // Implementación del servicio de Movimientos
+│     ├─ IClienteService.cs              // Interfaz para operaciones con clientes (alta, baja, consulta)
+│     └─ ClienteService.cs               // Implementación del servicio de Clientes
+└─ Web/                                  // Capa de presentación (Blazor / componentes de interfaz)
+   └─ Components/                        // Componentes Razor del frontend
+      ├─ App.razor                       // Raíz de la app Blazor (define Router y layout base)
+      ├─ Routes.razor                    // Definición de rutas (mapa de páginas de la aplicación)
+      ├─ _Imports.razor                  // Usings y directivas compartidas por los componentes Razor
+      ├─ Pages/                          // Páginas de la aplicación
+      │  └─ Dashboard/                   // Módulo de dashboard (pantalla principal / resumen)
+      │     ├─ Index.razor               // Página principal del dashboard (gráficas, tarjetas de resumen, etc.)
+      │     ├─ Index.razor.css           // Estilos específicos del dashboard (CSS aislado para Index.razor)
+      │     └─ _Imports.razor            // Usings y directivas locales para el área de Dashboard
+      ├─ Layout/                         // Componentes de layout (estructura visual general)
+      │  ├─ MainLayout.razor             // Layout principal (header, sidebar, content)
+      │  └─ NavMenu.razor                // Menú de navegación lateral (links a Dashboard, Vehículos, Clientes, etc.)
+      └─ Account/                        // Lógica de cuentas y autenticación con Identity
+         ├─ Pages/                       // Páginas de autenticación
+         │  ├─ Login.razor               // Página de inicio de sesión
+         │  └─ Register.razor            // Página de registro de nuevos usuarios
+         ├─ IdentityRedirectManager.cs   // Maneja redirecciones de Identity (login, logout, acceso no autorizado)
+         └─ IdentityNoOpEmailSender.cs   // Implementación “vacía” para envío de correo (placeholder para confirmación de email)
 
-- Definir las **entidades** (clases de modelo).
-- Configurar el **DbContext** (`ApplicationDbContext`) que:
 
-  - Hereda de `IdentityDbContext<ApplicationUser>`.
-  - Expone las tablas a través de `DbSet<T>`.
-  - Se conecta a SQL Server mediante la cadena de conexión en `appsettings.json`.
 
-- Proveer **servicios** (`Services`) que encapsulan la lógica de negocio y acceso a la base de datos (CRUD, consultas, etc.).
 
-La capa web (`Web/Components`) está construida con **Blazor Server** y define:
+```
 
-- La aplicación raíz (`App.razor`).
-- El layout principal (`MainLayout.razor`).
-- Los componentes relacionados con **Identity** (login, registro, etc.) bajo `Account/`.
+---
 
-------------------------------------------------------------
-## 3. Tecnologías principales
+## 3. Entidades principales (modelos)
+Ejemplos de entidades del dominio, como `Vehiculo`, `Cliente`, `Reserva`, con sus propiedades y relaciones.
 
-- **.NET 8** (o versión similar)
-- **Blazor Server** para la interfaz web.
-- **Entity Framework Core** para mapeo objeto-relacional (ORM).
-- **ASP.NET Core Identity** para usuarios, roles y autenticación.
-- **SQL Server** como base de datos relacional.
+---
 
-------------------------------------------------------------
-## 4. Flujo básico de la aplicación
+## 4. DbContext y configuración EF Core
+Configuración de `DbContext` usando Fluent API, definición de DbSets para las entidades principales y configuración de la cadena de conexión a la base de datos.
 
-1. **Inicio de la aplicación**  
-   `Program.cs` configura:
+---
 
-   - Servicios de EF Core (`ApplicationDbContext`).
-   - Identity (`ApplicationUser`, cookies, etc.).
-   - Servicios de dominio (`IVehiculoService`, `IClienteService`, etc.).
-   - Soporte para Blazor Server y el routing.
+## 5. Servicios y patrón Repository
+Definición de interfaces y clases para los repositorios y servicios, incluyendo `IVehiculoRepository`, `IClienteService`, etc. Implementación del patrón Unit of Work opcional.
 
-2. **Acceso a datos**  
-   Los componentes Blazor consumen los servicios de la capa `Data/Services`, que usan el `ApplicationDbContext` para:
+---
 
-   - Crear, leer, actualizar y eliminar registros de:
-     - Vehículos
-     - Clientes
-     - Usuarios internos
-     - Tipos y categorías de vehículos
+## 6. Integración con Blazor Server
 
-3. **Autenticación y autorización**  
-   - Identity gestiona usuarios y roles.
-   - La UI puede usar `AuthorizeView` y políticas de autorización para limitar acceso a partes de la app.
+- Los servicios se inyectan en los componentes Blazor.
+- Consumo de APIs de la aplicación a través de `HttpClient` y servicios personalizados.
+- Manejo del estado de la aplicación utilizando `CascadingAuthenticationState` y `AuthorizeView`.
 
-------------------------------------------------------------
-## 5. Cómo ejecutar el proyecto (resumen)
+---
 
-1. Clonar el repositorio:
+## 7. Seguridad e Identity
 
-   git clone https://github.com/Rele00/ModeloRentaCar.git
-   cd ModeloRentaCar
+- Configuración de **ASP.NET Identity** para gestión de usuarios y roles en `Program.cs`.
+- Páginas y componentes Blazor para registro, inicio de sesión y gestión de usuarios.
+- Políticas de autorización y autenticación basadas en roles y requisitos personalizados.
 
-2. Abrir la solución `RentCar.sln` con Visual Studio 2022 (u otro IDE compatible).
+---
 
-3. Configurar la cadena de conexión en `RentCar/appsettings.json` (sección `ConnectionStrings`).
+## 8. Migraciones y pruebas
 
-4. Aplicar migraciones de EF Core (si están creadas) o crear una inicial:
+- Uso de `dotnet ef migrations` para gestionar cambios en el modelo de datos.
+- Pruebas automatizadas con pruebas unitarias y de integración, usando una base de datos en memoria para pruebas.
 
-   # Desde la carpeta RentCar:
-   dotnet ef migrations add Inicial
-   dotnet ef database update
+---
 
-5. Ejecutar la aplicación:
+## 9. Buenas prácticas
 
-   dotnet run
+- Separación clara entre las capas de presentación, aplicación y acceso a datos.
+- Uso de DTOs y AutoMapper para la transferencia de datos entre capas.
+- Validación de datos en el servidor y cliente.
+- Documentación del código y uso de comentarios claros y concisos.
 
-   Luego abrir el navegador en la URL indicada (por ejemplo, https://localhost:xxxx).
+---
 
-------------------------------------------------------------
-## 6. Estado del proyecto
+## Conclusión
 
-El proyecto se encuentra en fase de **plantilla/estructura inicial**, centrado en:
-
-- Definir el modelo de datos y las entidades clave.
-- Configurar EF Core e Identity.
-- Montar la base de la interfaz con Blazor Server.
-
-Se puede extender fácilmente añadiendo:
-
-- Páginas CRUD completas para vehículos, clientes y usuarios.
-- Módulo de rentas (contratos, devoluciones, etc.).
-- Reportes y paneles de administración.
+Esta documentación proporciona una visión general de la arquitectura y estructura del proyecto **Rent Car**, sirviendo como guía para el desarrollo, integración y mantenimiento del sistema.
