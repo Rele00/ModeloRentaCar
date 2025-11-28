@@ -27,7 +27,7 @@ Este documento describe la arquitectura y estructura actual del proyecto **Rent 
 
 ---
 
-## 2. Estructura de archivos y carpetas actual
+## 2. Estructura de archivos y carpetas antigua
 
 ```
 RentCar/                                 // Solución principal del proyecto RentCar (backend + frontend)
