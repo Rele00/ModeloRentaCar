@@ -30,59 +30,229 @@ Este documento describe la arquitectura y estructura actual del proyecto **Rent 
 ## 2. Estructura de archivos y carpetas antigua
 
 ```
-RentCar/                                 // Solución principal del proyecto RentCar (backend + frontend)
-├─ Program.cs                            // Punto de entrada de la aplicación (configura servicios, middleware, etc.)
-├─ appsettings.json                      // Archivo de configuración (cadena de conexión, logging, opciones de la app)
-├─ README.md                             // Documento de explicación general del proyecto (cómo ejecutar, propósito, etc.)
-├─ Comentarios.md                        // Notas, decisiones de diseño, pendientes o documentación interna
-├─ ConsultaRentCar_ejemplo.sql           // Script SQL de ejemplo (consultas para practicar/reportes sobre la BD)
-├─ Data/                                 // Capa de acceso a datos y lógica de negocio básica
-│  ├─ Context/                           // Contexto de Entity Framework Core (mapeo a la base de datos)
-│  │  ├─ ApplicationDbContext.cs         // DbContext principal: define DbSet<>, configuración de tablas y relaciones
-│  │  └─ ApplicationUser.cs              // Clase de usuario que extiende IdentityUser (Nombre, Teléfono, etc.)
-│  ├─ Models/                            // Modelos de dominio (tablas de la base de datos)
-│  │  ├─ Vehiculo.cs                     // Entidad Vehiculo: Marca, Modelo, Placa, Año, Estado, CategoriaId, etc.
-│  │  ├─ Movimiento.cs                   // Entidad Movimiento: Vehiculo, Cliente, tipo de movimiento, fechas, etc.
-│  │  ├─ Categoria.cs                    // Entidad Categoria: nombre y descripción de la categoría de vehículos
-│  │  └─ Cliente.cs                      // Entidad Cliente: datos personales, licencia, vigencia, estado activo, etc.
-│  ├─ Dtos/                              // DTOs (Data Transfer Objects) para exponer datos al frontend o API
-│  │  ├─ MasUsadosDto.cs                 // DTO para reporte de vehículos más usados (Id, Marca, VecesUsado, etc.)
-│  │  ├─ VehiculoDto.cs                  // DTO de Vehiculo (campos necesarios para vistas/formularios)
-│  │  ├─ MovimientoDto.cs                // DTO de Movimiento (para listar y registrar movimientos)
-│  │  ├─ ClienteDto.cs                   // DTO de Cliente (para formularios y listados)
-│  │  └─ CategoriaDto.cs                 // DTO de Categoria (para combos/listados de categorías)
-│  └─ Services/                          // Servicios (lógica de negocio y acceso a datos encapsulado)
-│     ├─ IMasUsadosService.cs            // Interfaz del servicio que obtiene los vehículos más usados
-│     ├─ MasUsadosService.cs             // Implementación del servicio de vehículos más usados (consultas agrupadas, TOP N, etc.)
-│     ├─ IVehiculoService.cs             // Interfaz para operaciones con vehículos (CRUD, filtros, etc.)
-│     ├─ VehiculoService.cs              // Implementación del servicio de Vehiculos (usa ApplicationDbContext)
-│     ├─ IMovimientoService.cs           // Interfaz para operaciones con movimientos (rentas, devoluciones, etc.)
-│     ├─ MovimientoService.cs            // Implementación del servicio de Movimientos
-│     ├─ IClienteService.cs              // Interfaz para operaciones con clientes (alta, baja, consulta)
-│     └─ ClienteService.cs               // Implementación del servicio de Clientes
-└─ Web/                                  // Capa de presentación (Blazor / componentes de interfaz)
-   └─ Components/                        // Componentes Razor del frontend
-      ├─ App.razor                       // Raíz de la app Blazor (define Router y layout base)
-      ├─ Routes.razor                    // Definición de rutas (mapa de páginas de la aplicación)
-      ├─ _Imports.razor                  // Usings y directivas compartidas por los componentes Razor
-      ├─ Pages/                          // Páginas de la aplicación
-      │  └─ Dashboard/                   // Módulo de dashboard (pantalla principal / resumen)
-      │     ├─ Index.razor               // Página principal del dashboard (gráficas, tarjetas de resumen, etc.)
-      │     ├─ Index.razor.css           // Estilos específicos del dashboard (CSS aislado para Index.razor)
-      │     └─ _Imports.razor            // Usings y directivas locales para el área de Dashboard
-      ├─ Layout/                         // Componentes de layout (estructura visual general)
-      │  ├─ MainLayout.razor             // Layout principal (header, sidebar, content)
-      │  └─ NavMenu.razor                // Menú de navegación lateral (links a Dashboard, Vehículos, Clientes, etc.)
-      └─ Account/                        // Lógica de cuentas y autenticación con Identity
-         ├─ Pages/                       // Páginas de autenticación
-         │  ├─ Login.razor               // Página de inicio de sesión
-         │  └─ Register.razor            // Página de registro de nuevos usuarios
-         ├─ IdentityRedirectManager.cs   // Maneja redirecciones de Identity (login, logout, acceso no autorizado)
-         └─ IdentityNoOpEmailSender.cs   // Implementación “vacía” para envío de correo (placeholder para confirmación de email)
-
-
-
-
+ModeloRentaCar-master
+├── .gitattributes
+├── .gitignore
+├── README.md
+├── RentCar.sln
+└── RentCar
+    ├── Program.cs
+    ├── appsettings.json
+    ├── appsettings.Development.json
+    ├── Comentarios.md
+    ├── RentCar.csproj
+    ├── README.md
+    │
+    ├── Properties
+    │   ├── launchSettings.json
+    │   ├── serviceDependencies.json
+    │   └── serviceDependencies.local.json
+    │
+    ├── Data
+    │   ├── Context
+    │   │   ├── ApplicationDbContext.cs
+    │   │   └── ApplicationUser.cs
+    │   │
+    │   ├── Dtos
+    │   │   ├── CategoriaDto.cs
+    │   │   ├── ClienteDto.cs
+    │   │   ├── MasUsadosDto.cs
+    │   │   ├── MovimientoDto.cs
+    │   │   ├── RentaCreateDto.cs
+    │   │   ├── RentaDevolucionDtp.cs
+    │   │   ├── RentaResumenDto.cs
+    │   │   └── VehiculoDto.cs
+    │   │
+    │   ├── Models
+    │   │   ├── Categoria.cs
+    │   │   ├── Cliente.cs
+    │   │   ├── Factura.cs
+    │   │   ├── Movimiento.cs
+    │   │   ├── Renta.cs
+    │   │   └── Vehiculo.cs
+    │   │
+    │   ├── Services
+    │   │   ├── ICategoriaService.cs
+    │   │   ├── IClienteService.cs
+    │   │   ├── IMasUsadosService.cs
+    │   │   ├── IMovimientoService.cs
+    │   │   ├── IRentaService.cs
+    │   │   ├── IVehiculoService.cs
+    │   │   ├── CategoriaService.cs
+    │   │   ├── ClienteService.cs
+    │   │   ├── MasUsadosService.cs
+    │   │   ├── MovimientoService.cs
+    │   │   ├── RentaService.cs
+    │   │   └── VehiculoService.cs
+    │   │
+    │   └── Migrations
+    │       ├── 00000000000000_CreateIdentitySchema.cs
+    │       ├── 00000000000000_CreateIdentitySchema.Designer.cs
+    │       ├── 20251024150524_InitialPrueba5_Remake.cs
+    │       ├── 20251024150524_InitialPrueba5_Remake.Designer.cs
+    │       ├── 20251024152149_InitialPrueba6_Ajustes.cs
+    │       ├── 20251024152149_InitialPrueba6_Ajustes.Designer.cs
+    │       ├── 20251031001023_InitialAgregue_Categoria.cs
+    │       ├── 20251031001023_InitialAgregue_Categoria.Designer.cs
+    │       ├── 20251114220314_DashBoard.cs
+    │       ├── 20251114220314_DashBoard.Designer.cs
+    │       ├── 20251122234407_CssFeo.cs
+    │       ├── 20251122234407_CssFeo.Designer.cs
+    │       ├── 20251126010238_Categoria.cs
+    │       ├── 20251126010238_Categoria.Designer.cs
+    │       ├── 20251126023346_Categoria2.cs
+    │       ├── 20251126023346_Categoria2.Designer.cs
+    │       ├── 20251127183144_Renta.cs
+    │       ├── 20251127183144_Renta.Designer.cs
+    │       └── ApplicationDbContextModelSnapshot.cs
+    │
+    ├── Web
+    │   └── Components
+    │       ├── App.razor
+    │       ├── Component.razor
+    │       ├── Routes.razor
+    │       ├── _Imports.razor
+    │       │
+    │       ├── Account
+    │       │   ├── IdentityComponentsEndpointRouteBuilderExtensions.cs
+    │       │   ├── IdentityNoOpEmailSender.cs
+    │       │   ├── IdentityRedirectManager.cs
+    │       │   ├── IdentityRevalidatingAuthenticationStateProvider.cs
+    │       │   ├── IdentityUserAccessor.cs
+    │       │   │
+    │       │   ├── Pages
+    │       │   │   ├── AccessDenied.razor
+    │       │   │   ├── ConfirmEmail.razor
+    │       │   │   ├── ConfirmEmailChange.razor
+    │       │   │   ├── ExternalLogin.razor
+    │       │   │   ├── ForgotPassword.razor
+    │       │   │   ├── ForgotPasswordConfirmation.razor
+    │       │   │   ├── InvalidPasswordReset.razor
+    │       │   │   ├── InvalidUser.razor
+    │       │   │   ├── Lockout.razor
+    │       │   │   ├── Login.razor
+    │       │   │   ├── Login.razor.css
+    │       │   │   ├── LoginWith2fa.razor
+    │       │   │   ├── LoginWithRecoveryCode.razor
+    │       │   │   ├── Logout.razor
+    │       │   │   ├── Register.razor
+    │       │   │   ├── Register.razor.css
+    │       │   │   ├── RegisterConfirmation.razor
+    │       │   │   ├── ResendEmailConfirmation.razor
+    │       │   │   ├── ResetPassword.razor
+    │       │   │   ├── ResetPasswordConfirmation.razor
+    │       │   │   └── _Imports.razor
+    │       │   │
+    │       │   ├── Pages/Manage
+    │       │   │   ├── ChangePassword.razor
+    │       │   │   ├── Component.razor
+    │       │   │   ├── DeletePersonalData.razor
+    │       │   │   ├── Disable2fa.razor
+    │       │   │   ├── Email.razor
+    │       │   │   ├── EnableAuthenticator.razor
+    │       │   │   ├── ExternalLogins.razor
+    │       │   │   ├── GenerateRecoveryCodes.razor
+    │       │   │   ├── Index.razor
+    │       │   │   ├── PersonalData.razor
+    │       │   │   ├── ResetAuthenticator.razor
+    │       │   │   ├── SetPassword.razor
+    │       │   │   ├── TwoFactorAuthentication.razor
+    │       │   │   └── _Imports.razor
+    │       │   │
+    │       │   └── Shared
+    │       │       ├── AccountLayout.razor
+    │       │       ├── ExternalLoginPicker.razor
+    │       │       ├── ManageLayout.razor
+    │       │       ├── ManageNavMenu.razor
+    │       │       ├── RedirectToLogin.razor
+    │       │       ├── ShowRecoveryCodes.razor
+    │       │       └── StatusMessage.razor
+    │       │
+    │       ├── Layout
+    │       │   ├── MainLayout.razor
+    │       │   ├── MainLayout.razor.css
+    │       │   ├── NavMenu.razor
+    │       │   └── NavMenu.razor.css
+    │       │
+    │       └── Pages
+    │           ├── Auth.razor
+    │           ├── Counter.razor
+    │           ├── Error.razor
+    │           ├── Weather.razor
+    │           │
+    │           ├── Agregar
+    │           │   ├── Agregar.razor
+    │           │   ├── Agregar.razor.css
+    │           │   └── Aregar.razor.css
+    │           │
+    │           ├── Clientes
+    │           │   ├── GestionClientes.razor
+    │           │   └── GestionClientes.razor.css
+    │           │
+    │           ├── Conocenos
+    │           │   ├── Conocenos.razor
+    │           │   └── Conocenos.razor.css
+    │           │
+    │           ├── Contactos
+    │           │   ├── Contactos.razor
+    │           │   └── Contactos.razor.css
+    │           │
+    │           ├── Dashboard
+    │           │   ├── Index.razor
+    │           │   ├── Index.razor.css
+    │           │   └── _Imports.razor
+    │           │
+    │           ├── Home
+    │           │   ├── Home.razor
+    │           │   ├── Home.razor.css
+    │           │   ├── HomeLayout.razor
+    │           │   └── HomeLayout.razor.css
+    │           │
+    │           ├── Movimientos
+    │           │   ├── Movimientos.razor
+    │           │   └── Movimientos.razor.css
+    │           │
+    │           ├── PanelNavegacion
+    │           │   ├── PanelNavegacion.razor
+    │           │   └── PanelNavegacion.razor.css
+    │           │
+    │           ├── Renta
+    │           │   ├── DevolverRenta.razor
+    │           │   ├── DevolverRenta.razor.css
+    │           │   ├── RentarVehiculo.razor
+    │           │   ├── RentarVehiculo.razor.css
+    │           │   ├── RentasActivas.razor
+    │           │   └── RentasActivas.razor.css
+    │           │
+    │           └── Vehiculos
+    │               ├── ListaVehiculos
+    │               │   ├── ListaVehiculos.razor
+    │               │   └── ListaVehiculos.razor.css
+    │               │
+    │               ├── VehiculoCategoria
+    │               │   ├── VehiculoCategoria.razor
+    │               │   └── VehiculoCategoria.razor.css
+    │               │
+    │               └── VerVehiculos
+    │                   ├── VerVehiculos.razor
+    │                   └── VerVehiculos.razor.css
+    │
+    └── wwwroot
+        ├── app.css
+        ├── favicon.png
+        │
+        ├── bootstrap
+        │   ├── bootstrap.min.css
+        │   └── bootstrap.min.css.map
+        │
+        ├── img
+        │   └── logo.jpg
+        │
+        ├── js
+        │   └── Imprimir.js
+        │
+        └── Vehicle_Images
+            └── Toyota_Corolla_2015.jpg
 ```
 
 ---
