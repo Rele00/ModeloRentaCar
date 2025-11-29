@@ -27,7 +27,7 @@ Este documento describe la arquitectura y estructura actual del proyecto **Rent 
 
 ---
 
-## 2. Estructura de archivos y carpetas antigua
+## 2. Estructura de archivos y carpetas actual
 
 ```
 ModeloRentaCar-master
